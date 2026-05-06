@@ -2,72 +2,72 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What This Is
+## โปรเจกต์นี้คืออะไร
 
-A static single-page TB dose calculator for adults (>15 years) based on Thai NTP 2021 and WHO 2025 guidelines. No build system, no dependencies, no backend — just three files served directly from the filesystem or any static host.
+เครื่องคำนวณขนาดยาวัณโรคสำหรับผู้ใหญ่ (อายุ >15 ปี) อ้างอิง Thai NTP 2021 และ WHO 2025 เป็น Static Single-Page App ไม่มี build system ไม่มี dependencies ไม่มี backend — มีเพียงสามไฟล์ เปิดใช้งานได้โดยตรงจาก filesystem หรือ static host ใดก็ได้
 
-- `index.html` — all markup; loads Tailwind CSS from CDN, Google Fonts (Prompt), `style.css`, and `script.js`
-- `script.js` — all application logic (~1,000 lines of vanilla JavaScript)
-- `style.css` — custom styles: input validation states, mobile grid layout, `renal-blink` animation
+- `index.html` — markup ทั้งหมด; โหลด Tailwind CSS จาก CDN, Google Fonts (Prompt), `style.css`, และ `script.js`
+- `script.js` — logic ทั้งหมดของแอป (~1,000 บรรทัด vanilla JavaScript)
+- `style.css` — style เพิ่มเติม: validation state ของ input, mobile grid layout, animation `renal-blink`
 
-## Running the App
+## การรันแอป
 
-Open `index.html` directly in a browser. No server, no install, no build step required.
+เปิด `index.html` ในเบราว์เซอร์ได้โดยตรง ไม่ต้องติดตั้งหรือ build อะไรทั้งสิ้น
 
-To simulate a static server locally:
+หากต้องการจำลอง static server ในเครื่อง:
 ```
 python3 -m http.server 8080
 ```
-Then visit `http://localhost:8080`.
+แล้วเปิด `http://localhost:8080`
 
-## Architecture of `script.js`
+## สถาปัตยกรรมของ `script.js`
 
-### Data Flow
+### การไหลของข้อมูล
 
-Every input change (weight, height, age, gender, Serum Cr) calls `calculate()`, which re-renders all three drug tables completely. User-entered actual doses are preserved across re-renders via the module-level `doseCache` object (keyed by drug name).
+ทุกครั้งที่ input เปลี่ยน (น้ำหนัก, ส่วนสูง, อายุ, เพศ, Serum Cr) จะเรียก `calculate()` ซึ่งจะ re-render ตารางยาทั้งสามตารางใหม่ทั้งหมด โดสจริงที่ผู้ใช้กรอกไว้จะถูกเก็บใน object ระดับ module ชื่อ `doseCache` (key คือชื่อยา) เพื่อให้ไม่หายเมื่อ re-render
 
-### Key Functions
+### ฟังก์ชันสำคัญ
 
-**Drug dose helpers** (`hDose`, `rDose`, `zDose`, `eDose`, `sDose`) — take weight (and age for Streptomycin) and return `{mg, tab, warn, warnMsg?}`. The `tab` field is a Thai-language string like `"R300 × 1 แคป"`. These encode the discrete pill/capsule sizes available in Thai hospitals.
+**Drug dose helpers** (`hDose`, `rDose`, `zDose`, `eDose`, `sDose`) — รับน้ำหนัก (และอายุสำหรับ Streptomycin) คืนค่า `{mg, tab, warn, warnMsg?}` โดย field `tab` เป็น string ภาษาไทย เช่น `"R300 × 1 แคป"` ซึ่ง encode ขนาดเม็ด/แคปที่มีจริงในโรงพยาบาลไทย
 
-**`calculate()`** — the main engine. Runs on every input event:
-1. Validates all inputs via `validateField()` / `validateWeight()`; returns early with error state if invalid
-2. Computes BMI and CKD-EPI 2021 eGFR
-3. Runs Cockcroft-Gault CrCl for Actual BW, Ideal BW, and Adjusted BW
-4. Selects which BW to use for CrCl: short stature (<152 cm) → Actual; underweight (ABW < IBW) → Actual; obese (ABW > 1.2× IBW) → Adjusted; otherwise → Ideal
-5. Builds first-line and MDR-TB drug arrays, then calls `renderTable()` for each
-6. Renders the FDC weight-band table
+**`calculate()`** — engine หลัก เรียกทุกครั้งที่มี input event:
+1. Validate input ทั้งหมดผ่าน `validateField()` / `validateWeight()`; หยุดทำงานพร้อมแสดง error state ถ้าข้อมูลไม่ถูกต้อง
+2. คำนวณ BMI และ eGFR (CKD-EPI 2021)
+3. คำนวณ CrCl (Cockcroft-Gault) สำหรับ Actual BW, Ideal BW, และ Adjusted BW
+4. เลือก BW ที่ใช้คำนวณ CrCl: ส่วนสูง <152 cm → Actual; น้ำหนักน้อย (ABW < IBW) → Actual; อ้วน (ABW > 1.2× IBW) → Adjusted; กรณีอื่น → Ideal
+5. สร้าง array ยา first-line และ MDR-TB แล้วเรียก `renderTable()` สำหรับแต่ละกลุ่ม
+6. Render ตาราง FDC weight-band
 
-**`renderTable(drugs, tbodyId, hoverCls, textCls, borderCls)`** — generates raw HTML strings and sets `innerHTML`. Each row includes an `<input>` for the actual dose; the `oninput` handler calls `updateMgKg()` and writes directly to `doseCache`.
+**`renderTable(drugs, tbodyId, hoverCls, textCls, borderCls)`** — สร้าง HTML string แล้วกำหนดให้ `innerHTML` โดยตรง แต่ละแถวมี `<input>` สำหรับกรอกโดสจริง; `oninput` handler เรียก `updateMgKg()` และเขียนค่าลง `doseCache`
 
-**`window.updateMgKg(input, weight, drugName, range)`** — live-updates the mg/kg cell in the same `<tr>` without re-rendering the whole table. Must be on `window` because it is called from inline `oninput` attributes in generated HTML.
+**`window.updateMgKg(input, weight, drugName, range)`** — อัปเดต cell mg/kg ใน `<tr>` เดียวกันทันทีโดยไม่ re-render ทั้งตาราง ต้องอยู่บน `window` เพราะถูกเรียกจาก inline `oninput` attribute ใน HTML ที่ถูกสร้างขึ้น
 
-**`calcFdcReverse()` / `lockFdc(active)`** — FDC reverse calculator. Rifafour locks out both Rifinah inputs; Rifinah-150 and Rifinah-300 can be used together. Lock state must be re-initialized on page load (browser autofill).
+**`calcFdcReverse()` / `lockFdc(active)`** — เครื่องคำนวณย้อนกลับ FDC: Rifafour จะ lock input Rifinah ทั้งสองออก; Rifinah-150 และ Rifinah-300 ใช้ร่วมกันได้ lock state ต้องถูก initialize ใหม่เมื่อโหลดหน้า (กรณี browser autofill)
 
-**`aminoDW(abw, ibw, adjBw, shortStature)`** — selects dosing weight for aminoglycosides (Streptomycin, Amikacin): capped at 100 kg; short stature always uses Actual BW.
+**`aminoDW(abw, ibw, adjBw, shortStature)`** — เลือก dosing weight สำหรับ aminoglycosides (Streptomycin, Amikacin): cap ที่ 100 kg; ส่วนสูง <152 cm ใช้ Actual BW เสมอ
 
-### Critical Invariants
+### Invariant ที่สำคัญ
 
-- **`doseCache`** — never cleared by `calculate()` itself; only cleared by `resetAll()`. This is intentional so user-entered doses survive table re-renders.
-- **CrCl < 30 threshold** — triggers the `renal-blink` CSS animation on renally-adjusted drug rows and shows/hides the `fdcRenalBanner` warning (HRZE/Rifafour contraindicated).
-- **Short stature flag** (`h_cm < 152`) — disables IBW and AdjBW entirely for both CrCl selection and aminoglycoside dosing weight.
-- **Cockcroft-Gault validated range** — ages 18–92 only. Ages outside this range show an orange warning but do not block calculation (unlike height/weight/Cr which block with red errors).
-- **R capsule constraint** — Rifampicin capsules cannot be split, so `rDose()` uses whole-capsule increments (R300 or R450), which can put patients <25 kg above the mg/kg range. This is an intentional clinical trade-off documented in the source.
+- **`doseCache`** — `calculate()` จะไม่ล้างค่านี้เด็ดขาด; ล้างได้เฉพาะใน `resetAll()` เท่านั้น เพื่อให้โดสจริงที่ผู้ใช้กรอกอยู่รอดข้าม re-render
+- **CrCl < 30 mL/min** — trigger animation `renal-blink` บน row ยาที่ต้องปรับ และแสดง/ซ่อน banner `fdcRenalBanner` (ห้ามใช้ Rifafour/HRZE)
+- **Short stature flag** (`h_cm < 152`) — ปิดใช้งาน IBW และ AdjBW ทั้งหมด ทั้งสำหรับการเลือก BW ใน CrCl และ aminoglycoside dosing weight
+- **ช่วงอายุที่ validate ได้ใน Cockcroft-Gault** — 18–92 ปีเท่านั้น อายุนอกช่วงนี้จะแสดง warning สีส้มแต่ไม่ block การคำนวณ (ต่างจากส่วนสูง/น้ำหนัก/Cr ที่ block พร้อม error สีแดง)
+- **ข้อจำกัดแคป R** — แคป Rifampicin หักไม่ได้ ดังนั้น `rDose()` ใช้ขนาดเต็มแคป (R300 หรือ R450) ซึ่งอาจทำให้ผู้ป่วยน้ำหนัก <25 kg ได้รับ mg/kg เกิน range นี่เป็น trade-off ทางคลินิกที่ตั้งใจไว้และ document ไว้ใน source code
 
-## Mobile Layout
+## Layout บน Mobile
 
-The mobile breakpoint is `≤767px`. The layout uses `display: contents` on wrapper elements (`#crclTopBox`, `#crclHeaderBw`, `#crclContentRow`) so their children can participate directly in the outer CSS grid. This is the only way the L-shaped CrCl+BMI layout works on mobile without duplicating HTML.
+Mobile breakpoint คือ `≤767px` โดย layout ใช้ `display: contents` บน wrapper element (`#crclTopBox`, `#crclHeaderBw`, `#crclContentRow`) เพื่อให้ child element เข้าร่วม outer CSS grid ได้โดยตรง วิธีนี้เป็นวิธีเดียวที่ทำให้ layout รูปตัว L ของ CrCl+BMI ทำงานได้บน mobile โดยไม่ต้องเพิ่ม HTML ซ้ำซ้อน
 
-The "📱 Mobile View" button on desktop injects a `<style id="mobileForceStyle">` tag that overrides Tailwind's responsive classes, capping the app at 390 px width for screenshots and testing.
+ปุ่ม "📱 Mobile View" บน desktop จะ inject `<style id="mobileForceStyle">` tag เพื่อ override responsive class ของ Tailwind โดย cap ความกว้างที่ 390 px สำหรับการ screenshot และทดสอบ
 
-## Drug Reference Data
+## ข้อมูลอ้างอิงยา
 
-| Section | Source | Notes |
+| ส่วน | แหล่งอ้างอิง | หมายเหตุ |
 |---|---|---|
-| First-line (H, R, Z, E) | Thai NTP 2021 Table 5.1 | Discrete pill sizes: H100, R300/450 cap, Z500, E400/500 |
+| First-line (H, R, Z, E) | Thai NTP 2021 ตาราง 5.1 | ขนาดเม็ด: H100, R300/450 แคป, Z500, E400/500 |
 | FDC weight bands | WHO Adult Bands | Rifafour e-275, Rifinah-150, Rifinah-300 |
-| MDR-TB Group A+B | Thai NTP 2021 Table 6.3 | Shorter regimen |
-| MDR-TB Group C | Thai NTP 2021 | Amikacin uses aminoglycoside dosing weight |
-| CrCl | Cockcroft-Gault | Renal adjustment threshold: CrCl < 30 mL/min → 3×/week dosing |
-| eGFR | CKD-EPI 2021 | Display only; not used for dose adjustment |
-| BMI | WHO Asia-Pacific cutoffs | 23 = overweight, 25 = obese I |
+| MDR-TB Group A+B | Thai NTP 2021 ตาราง 6.3 | Shorter regimen |
+| MDR-TB Group C | Thai NTP 2021 | Amikacin ใช้ aminoglycoside dosing weight |
+| CrCl | Cockcroft-Gault | เกณฑ์ปรับขนาดยา: CrCl < 30 mL/min → ให้ 3 ครั้ง/สัปดาห์ |
+| eGFR | CKD-EPI 2021 | แสดงผลเท่านั้น ไม่ได้ใช้ปรับขนาดยา |
+| BMI | WHO Asia-Pacific cutoffs | 23 = น้ำหนักเกิน, 25 = อ้วนระดับ 1 |
