@@ -1,0 +1,206 @@
+﻿        body { font-family: 'Prompt', sans-serif; }
+        input[type=range] { accent-color: #0d9488; }
+        @keyframes blink { 0%,100%{background:#fee2e2} 50%{background:#fca5a5} }
+        .renal-blink { animation: blink 1.5s ease-in-out infinite; }
+
+        /* ── VALIDATION ───────────────────────────── */
+        .input-error {
+            border-color: #ef4444 !important;
+            background-color: #fff5f5 !important;
+            box-shadow: 0 0 0 2px #fecaca !important;
+        }
+        .tooltip-error {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 50;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-top: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+        .tooltip-error::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 12px;
+            border-width: 0 5px 5px;
+            border-style: solid;
+            border-color: transparent transparent #ef4444;
+        }
+        input[type="number"]:not(:placeholder-shown) + .cph,
+        input[type="number"]:focus + .cph { display: none !important; }
+        .field-wrap { position: relative; }
+
+        /* ── MOBILE LAYOUT ≤767px ─────────────────────── */
+        @media (max-width: 767px) {
+
+            /* ── CrCl+BMI: L-shape grid บน mobile ─── */
+            #crclBmiWrapper {
+                display: grid !important;
+                grid-template-columns: 1fr 6.5rem;
+                grid-template-rows: auto auto auto auto;
+                column-gap: 0.4rem;
+                row-gap: 0;
+                align-items: start;
+            }
+            /* Multi-level display:contents เพื่อให้ recCrclBox หลุดออกจาก crclHeaderBw */
+            #crclTopBox      { display: contents !important; }
+            #crclHeaderBw    { display: contents !important; }
+            #crclContentRow  { display: contents !important; }
+
+            /* bmiBox: col 2 span 2 rows — ใช้ margin เพื่อ match column-gap */
+            #bmiBox          { grid-column: 2; grid-row: 1 / span 2; width: auto !important; align-self: start; margin-left: 0; }
+            /* CrCl title row: col 1 row 1 — ต่อกับ bwBoxes ไม่มี gap */
+            #crclTitleRow {
+                grid-column: 1; grid-row: 1;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-bottom: none;
+                border-radius: 0.5rem 0.5rem 0 0;
+                padding: 0.5rem 0.625rem 0.375rem;
+                margin-bottom: 0;
+            }
+            /* bwBoxes: col 1 row 2 — ต่อจาก titleRow ไม่มี gap */
+            #bwBoxes {
+                grid-column: 1; grid-row: 2;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-top: none;
+                border-radius: 0 0 0.5rem 0.5rem;
+                padding: 0.25rem 0.625rem 0.5rem;
+                flex-wrap: wrap;
+                margin-top: 0;
+            }
+            /* recCrclBox: กรอบใหญ่ flex row */
+            #recCrclBox {
+                grid-column: 1 / -1; grid-row: 3; margin-top: 0.4rem;
+                flex-direction: row !important;
+                align-items: stretch !important;
+                padding: 8px 10px !important;
+                gap: 8px;
+            }
+            #recCrclBox > div:first-child {
+                flex: 0 0 58% !important;
+                min-width: 0 !important;
+            }
+            /* กรอบย่อย CrCl — column 2 แถว */
+            #crclValueInline {
+                display: flex !important;
+                flex: 1 !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: white !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.5rem !important;
+                padding: 1px 6px !important;
+                margin-left: 0 !important;
+                gap: 0;
+            }
+            #recCrclValue { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 4px !important; white-space: nowrap; }
+            #recCrclValue > span:first-child { font-size: 25px !important; font-weight: 900 !important; color: #94a3b8 !important; }
+            #crclNumber { font-size: 30px !important; min-width: auto !important; display: inline !important; font-weight: 900 !important; }
+            #recCrclValue > span:last-child { font-size: 13px !important; font-weight: 700 !important; color: #94a3b8 !important; }
+            #crclRow2 { display: none; align-items: center; gap: 2px; }
+            #crclLabelSpacer { font-size: 25px !important; font-weight: 900 !important; }
+            #crclMlMin { font-size: 16px !important; font-weight: 700 !important; color: #94a3b8 !important; }
+            #renalIcon { font-size: 14px !important; }
+            #crclValueInline::after { content: none !important; }
+            /* BMI ยืดเต็ม + ลดตัวเลข */
+            #bmiBox { align-self: stretch !important; }
+            #bmiValue { font-size: 20px !important; }
+            #crclBottomZone { display: none !important; }
+            #egfrBox         { display: none !important; }
+            #scrRefWarning   { display: none !important; }
+            /* crclValueInline แสดงบน mobile ใน recCrclBox */
+
+            /* Input section: stack weight row + 2×2 grid */
+            #inputWrapper    { flex-direction: column; gap: 0.5rem; }
+            #weightSection   { width: 100%; }
+            #fieldGrid       { grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+
+            /* Reorder fields: เพศ → Cr → ส่วนสูง → อายุ */
+            #fieldGender  { order: 1; }
+            #fieldScr     { order: 2; }
+            #fieldHeight  { order: 3; }
+            #fieldAge     { order: 4; }
+
+            /* Shrink labels + inputs */
+            #fieldGrid label { font-size: 10px; height: auto; margin-bottom: 2px; }
+            #fieldGrid input,
+            #fieldGrid select { height: 2rem; font-size: 12px; padding: 0 6px; }
+
+            /* CrCl: stack BW boxes + rec box */
+            #crclRow         { flex-direction: column; gap: 0.4rem; }
+            #bwBoxes         { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.3rem; }
+            .bw-box          { width: auto !important; min-width: 0 !important; padding: 3px 4px; }
+            .bw-box p:first-child { font-size: 9px; }
+            .bw-box p:last-child  { font-size: 12px; }
+            /* BMI mobile: Body Mass Index ห้ามตัดบรรทัด */
+            #bmiBox .text-sm.font-bold span { font-size: 7px !important; white-space: nowrap; }
+            #bmiClass { font-size: 7px !important; }
+            #bmiBar, #bmiNote { display: none; }
+
+            /* CrCl กรอบ mobile: รวม titleRow และ bwBoxes เป็น visual group เดียว */
+            #crclTitleRow {
+                grid-column: 1; grid-row: 1;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-bottom: none;
+                border-radius: 0.5rem 0.5rem 0 0;
+                padding: 0.5rem 0.625rem 0.375rem;
+            }
+            #bwBoxes {
+                grid-column: 1; grid-row: 2;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-top: none;
+                border-radius: 0 0 0.5rem 0.5rem;
+                padding: 0.25rem 0.625rem 0.5rem;
+                flex-wrap: wrap;
+            }
+            /* recCrclBox mobile: ไม่ต้อง flex row อีก */
+            #recCrclText { font-size: 11px; }
+            #renalWarning { font-size: 10px; }
+
+            /* Header smaller */
+            #mainTitle    { font-size: 1rem; }
+            #mainSubtitle { font-size: 10px; }
+
+            /* Section headings */
+            .section-heading { font-size: 13px; }
+
+            /* Tables: tighter — ยกเว้น input cell */
+            table th { padding: 4px 5px; font-size: 11px; }
+            table td { padding: 3px 4px; font-size: 11px; }
+            table td input { height: 3rem !important; font-size: 12px !important; }
+            table td input::placeholder { font-size: 10px; }
+
+            /* Fixed column widths — เท่ากันทุกตาราง */
+            table { table-layout: fixed; width: 100%; }
+            table td, table th { word-break: break-word; overflow-wrap: break-word; }
+            /* col 1: Drug */
+            table th:nth-child(1), table td:nth-child(1) { width: 30%; }
+            /* col 2: Rec Dose */
+            table th:nth-child(2), table td:nth-child(2) { width: 30%; }
+            /* col 3: โดสจริง */
+            table th:nth-child(3), table td:nth-child(3) { width: 22%; }
+            /* col 4: mg/kg */
+            table th:nth-child(4), table td:nth-child(4) { width: 18%; }
+        }
+        /* Desktop: ซ่อน mobile bottom zone, แสดง inline value */
+        @media (min-width: 768px) {
+            #crclBottomZone { display: none !important; }
+            #crclValueInline { display: flex !important; }
+            #crclRow2 { display: none !important; }
+            /* desktop: แสดง mL/min ใน recCrclValue ปกติ */
+            #recCrclValue > span:last-child { display: inline !important; font-size: 1.5rem !important; font-weight: 900 !important; }
+            #renalIcon { display: inline !important; font-size: 1.4rem !important; }
+        }
