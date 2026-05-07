@@ -21,7 +21,8 @@
             padding: 4px 10px;
             border-radius: 6px;
             margin-top: 4px;
-            white-space: nowrap;
+            white-space: normal;
+            max-width: min(260px, 80vw);
             pointer-events: none;
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
         }

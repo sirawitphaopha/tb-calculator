@@ -96,6 +96,9 @@ function calcCrCl(bw, age, scr, gender) {
 //  DOSE CACHE — เก็บค่า input โดสจริงไม่ให้หายตอน re-render
 // ════════════════════════════════════════════
 const doseCache = {};
+let scrUnit    = 'mgdl'; // 'mgdl' | 'umol'
+let weightUnit = 'kg';  // 'kg'   | 'lb'
+let heightUnit = 'cm';  // 'cm'   | 'inch'
 
 // ════════════════════════════════════════════
 //  BMI CLASSIFICATION (WHO Global)
@@ -211,7 +214,7 @@ const LIMITS = {
     weight: { min:20,  max:200, minMsg:'น้ำหนักต่ำเกินไป (ต่ำสุด 20 kg)',    maxMsg:'น้ำหนักสูงเกินไป (สูงสุด 200 kg)' },
     height: { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)',   maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' },
     // BUG FIX: CG trial validated อายุ 18–92 ปี ไม่ใช่ 15–120
-    age:    { min:18,  max:92,  minMsg:'Cockcroft-Gault validated อายุ 18–92 ปี (ค่าที่ได้อาจไม่แม่นยำ)', maxMsg:'Cockcroft-Gault validated อายุ 18–92 ปี (ค่าที่ได้อาจไม่แม่นยำ)' },
+    age:    { min:18,  max:92,  minMsg:'CrCl อาจไม่แม่นยำ', maxMsg:'CrCl อาจไม่แม่นยำ' },
     scr:    { min:0.1, max:30,  minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' }
 };
 
@@ -221,20 +224,21 @@ function validateField(id) {
     const lim  = LIMITS[id];
     const wrap = el.closest('.field-wrap');
     if (wrap) { const old = wrap.querySelector('.tooltip-error'); if (old) old.remove(); }
-    if (!el.value || isNaN(val)) { el.classList.remove('input-error'); return true; }
+    if (!el.value || isNaN(val)) {
+        el.classList.remove('input-error');
+        el.style.borderColor = '';
+        el.style.backgroundColor = '';
+        if (id === 'age') { const aw = document.getElementById('ageWarnInline'); if (aw) aw.style.visibility = 'hidden'; }
+        return true;
+    }
     const msg = val < lim.min ? lim.minMsg : val > lim.max ? lim.maxMsg : null;
     if (msg) {
         // อายุ: แสดง warning สีส้มแต่ไม่ block การคำนวณ
         if (id === 'age') {
             el.style.borderColor = '#f97316';
             el.style.backgroundColor = '#fff7ed';
-            if (wrap) {
-                const tip = document.createElement('div');
-                tip.className = 'tooltip-error';
-                tip.style.background = '#f97316';
-                tip.textContent = msg;
-                wrap.appendChild(tip);
-            }
+            const ageWarnEl = document.getElementById('ageWarnInline');
+            if (ageWarnEl) ageWarnEl.style.visibility = 'visible';
             return true; // ไม่ block
         }
         el.classList.add('input-error');
@@ -244,6 +248,7 @@ function validateField(id) {
     el.classList.remove('input-error');
     el.style.borderColor = '';
     el.style.backgroundColor = '';
+    if (id === 'age') { const aw = document.getElementById('ageWarnInline'); if (aw) aw.style.visibility = 'hidden'; }
     return true;
 }
 
@@ -274,6 +279,84 @@ window.addEventListener('load', () => {
 });
 
 // ════════════════════════════════════════════
+//  WEIGHT UNIT TOGGLE
+// ════════════════════════════════════════════
+function toggleWeightUnit() {
+    const input  = document.getElementById('weight');
+    const slider = document.getElementById('weightSlider');
+    const btn    = document.getElementById('weightUnitBtn');
+    const val    = parseFloat(input.value);
+    if (weightUnit === 'kg') {
+        weightUnit = 'lb';
+        if (!isNaN(val)) input.value = Math.round(val * 2.20462);
+        input.min = '44'; input.max = '441'; input.step = '1';
+        btn.textContent = 'lb ⇄';
+        LIMITS.weight = { min:44, max:441, minMsg:'Weight too low (min 44 lb)', maxMsg:'Weight too high (max 441 lb)' };
+    } else {
+        weightUnit = 'kg';
+        if (!isNaN(val)) input.value = Math.round(val / 2.20462);
+        input.min = '20'; input.max = '200'; input.step = '1';
+        btn.textContent = 'kg ⇄';
+        LIMITS.weight = { min:20, max:200, minMsg:'น้ำหนักต่ำเกินไป (ต่ำสุด 20 kg)', maxMsg:'น้ำหนักสูงเกินไป (สูงสุด 200 kg)' };
+    }
+    const kg = weightUnit === 'lb' ? parseFloat(input.value) / 2.20462 : parseFloat(input.value);
+    if (!isNaN(kg)) slider.value = Math.min(200, Math.max(20, kg));
+    calculate();
+}
+
+// ════════════════════════════════════════════
+//  HEIGHT UNIT TOGGLE
+// ════════════════════════════════════════════
+function toggleHeightUnit() {
+    const input = document.getElementById('height');
+    const btn   = document.getElementById('heightUnitBtn');
+    const lbl   = document.getElementById('heightUnitLabel');
+    const val   = parseFloat(input.value);
+    if (heightUnit === 'cm') {
+        heightUnit = 'inch';
+        if (!isNaN(val)) input.value = (val / 2.54).toFixed(1);
+        input.min = '40'; input.max = '91'; input.step = '0.5';
+        input.placeholder = 'e.g. 65';
+        btn.textContent = 'in ⇄'; lbl.textContent = 'in';
+        LIMITS.height = { min:40, max:91, minMsg:'Height too low (min 40 in)', maxMsg:'Height too high (max 91 in)' };
+    } else {
+        heightUnit = 'cm';
+        if (!isNaN(val)) input.value = Math.round(val * 2.54);
+        input.min = '100'; input.max = '230'; input.step = '1';
+        input.placeholder = 'เช่น 165';
+        btn.textContent = 'cm ⇄'; lbl.textContent = 'cm';
+        LIMITS.height = { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)', maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' };
+    }
+    calculate();
+}
+
+// ════════════════════════════════════════════
+//  SCR UNIT TOGGLE
+// ════════════════════════════════════════════
+function toggleScrUnit() {
+    const input = document.getElementById('scr');
+    const btn   = document.getElementById('scrUnitBtn');
+    const lbl   = document.getElementById('scrUnitLabel');
+    const val   = parseFloat(input.value);
+    if (scrUnit === 'mgdl') {
+        scrUnit = 'umol';
+        if (!isNaN(val)) input.value = Math.round(val * 88.4);
+        input.step = '1'; input.min = '9'; input.max = '2652';
+        input.placeholder = 'เช่น 88';
+        btn.textContent = 'μmol/L ⇄'; lbl.textContent = 'μmol/L';
+        LIMITS.scr = { min:9, max:2652, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 9 μmol/L)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 2652 μmol/L)' };
+    } else {
+        scrUnit = 'mgdl';
+        if (!isNaN(val)) input.value = (val / 88.4).toFixed(2);
+        input.step = '0.01'; input.min = '0.1'; input.max = '30';
+        input.placeholder = 'เช่น 1.0';
+        btn.textContent = 'mg/dL ⇄'; lbl.textContent = 'mg/dL';
+        LIMITS.scr = { min:0.1, max:30, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' };
+    }
+    calculate();
+}
+
+// ════════════════════════════════════════════
 //  RESET ALL
 // ════════════════════════════════════════════
 function resetAll() {
@@ -283,6 +366,33 @@ function resetAll() {
     document.getElementById('height').value = '';
     document.getElementById('age').value = '';
     document.getElementById('scr').value = '';
+    // reset weight unit to kg
+    if (weightUnit !== 'kg') {
+        weightUnit = 'kg';
+        const wi = document.getElementById('weight');
+        wi.min = '20'; wi.max = '200'; wi.step = '1';
+        document.getElementById('weightUnitBtn').textContent = 'kg ⇄';
+        LIMITS.weight = { min:20, max:200, minMsg:'น้ำหนักต่ำเกินไป (ต่ำสุด 20 kg)', maxMsg:'น้ำหนักสูงเกินไป (สูงสุด 200 kg)' };
+    }
+    // reset height unit to cm
+    if (heightUnit !== 'cm') {
+        heightUnit = 'cm';
+        const hi = document.getElementById('height');
+        hi.min = '100'; hi.max = '230'; hi.step = '1'; hi.placeholder = 'เช่น 165';
+        document.getElementById('heightUnitBtn').textContent = 'cm ⇄';
+        document.getElementById('heightUnitLabel').textContent = 'cm';
+        LIMITS.height = { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)', maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' };
+    }
+    // reset scr unit to mg/dL
+    if (scrUnit !== 'mgdl') {
+        scrUnit = 'mgdl';
+        const scrInput = document.getElementById('scr');
+        scrInput.step = '0.01'; scrInput.min = '0.1'; scrInput.max = '30';
+        scrInput.placeholder = 'เช่น 1.0';
+        document.getElementById('scrUnitBtn').textContent = 'mg/dL ⇄';
+        document.getElementById('scrUnitLabel').textContent = 'mg/dL';
+        LIMITS.scr = { min:0.1, max:30, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' };
+    }
     document.getElementById('gender').value = '';
     document.getElementById('btnMale').className   = 'flex-1 text-sm font-semibold transition-colors bg-white text-slate-400';
     document.getElementById('btnFemale').className = 'flex-1 text-sm font-semibold transition-colors border-r border-teal-300 bg-white text-slate-400';
@@ -294,6 +404,12 @@ function resetAll() {
     });
     const res = document.getElementById('fdcReverseResult');
     if (res) res.classList.add('hidden');
+
+    // inline warnings
+    const genderWarnEl = document.getElementById('genderWarnInline');
+    const ageWarnEl    = document.getElementById('ageWarnInline');
+    if (genderWarnEl) genderWarnEl.style.visibility = 'hidden';
+    if (ageWarnEl)    ageWarnEl.style.visibility = 'hidden';
 
     // doseCache
     Object.keys(doseCache).forEach(k => delete doseCache[k]);
@@ -378,7 +494,12 @@ function toggleMobileView() {
 function syncWeight(src) {
     const n = document.getElementById('weight');
     const s = document.getElementById('weightSlider');
-    if (src === 'input') s.value = n.value; else n.value = s.value;
+    if (src === 'input') {
+        const kg = weightUnit === 'lb' ? parseFloat(n.value) / 2.20462 : parseFloat(n.value);
+        if (!isNaN(kg)) s.value = Math.min(200, Math.max(20, kg));
+    } else {
+        n.value = weightUnit === 'lb' ? Math.round(parseFloat(s.value) * 2.20462) : s.value;
+    }
     calculate();
 }
 
@@ -386,21 +507,45 @@ function syncWeight(src) {
 //  MAIN CALCULATE
 // ════════════════════════════════════════════
 function calculate() {
-    const w      = Math.max(0, parseFloat(document.getElementById('weight').value) || 0);
-    const h_cm   = parseFloat(document.getElementById('height').value);
+    const wRaw   = Math.max(0, parseFloat(document.getElementById('weight').value) || 0);
+    const w      = weightUnit === 'lb' ? wRaw / 2.20462 : wRaw;
+    const h_cmRaw = parseFloat(document.getElementById('height').value);
+    const h_cm   = heightUnit === 'inch' ? h_cmRaw * 2.54 : h_cmRaw;
     const age    = parseFloat(document.getElementById('age').value);
     const gender = document.getElementById('gender').value;
-    const scr    = parseFloat(document.getElementById('scr').value);
+    const scrRaw = parseFloat(document.getElementById('scr').value);
+    const scr    = scrUnit === 'umol' ? scrRaw / 88.4 : scrRaw;
 
     // ── Validate all fields ──────────────────
-    const wOk = validateWeight(w);
+    const wOk = validateWeight(wRaw);
     const hOk = validateField('height');
     const aOk = validateField('age');
     const sOk = validateField('scr');
     const hasError = !wOk || !hOk || !aOk || !sOk;
 
+    // ── Gender warning ───────────────────────
+    const crclNeedsGender = Number.isFinite(scr) || Number.isFinite(h_cm) || Number.isFinite(age);
+    const genderField  = document.getElementById('fieldGender');
+    const genderBtnRow = genderField ? genderField.querySelector('.flex.h-9') : null;
+    const genderWarnEl = document.getElementById('genderWarnInline');
+    if (!gender && crclNeedsGender) {
+        if (genderBtnRow) genderBtnRow.style.borderColor = '#f97316';
+        if (genderWarnEl) genderWarnEl.style.visibility = 'visible';
+    } else {
+        if (genderBtnRow) genderBtnRow.style.borderColor = '';
+        if (genderWarnEl) genderWarnEl.style.visibility = 'hidden';
+    }
+
     const ageValid  = Number.isFinite(age);
     const ageOver65 = ageValid && age > 65;
+
+    // ── Age range note color ─────────────────
+    const ageRangeNote = document.getElementById('ageRangeNote');
+    if (ageRangeNote) {
+        const ageOutOfRange = ageValid && (age < 18 || age > 92);
+        ageRangeNote.style.color      = ageOutOfRange ? '#f97316' : '';
+        ageRangeNote.style.fontWeight = ageOutOfRange ? '700' : '';
+    }
 
     document.getElementById('txtABW').textContent = w > 0 ? w.toFixed(1) : '-';
 
@@ -440,7 +585,7 @@ function calculate() {
         const k = sex === 'female' ? 0.7 : 0.9;
         const a = sex === 'female' ? -0.241 : -0.302;
         const ratio = scr / k;
-        return 142 * Math.pow(Math.min(ratio,1), a) * Math.pow(Math.max(ratio,1), -1.200) * Math.pow(0.9938, age);
+        return 142 * Math.pow(Math.min(ratio,1), a) * Math.pow(Math.max(ratio,1), -1.200) * Math.pow(0.9938, age) * (sex === 'female' ? 1.012 : 1);
     }
     const eGFR = calcEGFR(scr, age, gender);
     const eGFRStr = eGFR !== null
@@ -510,7 +655,7 @@ function calculate() {
         return { dw: Math.min(adjBw, 100), label: 'Adjusted BW' };
     }
     let finalCrcl = null;
-    const allFilled = w > 0 && Number.isFinite(h_cm) && ageValid && Number.isFinite(scr);
+    const allFilled = w > 0 && Number.isFinite(h_cm) && ageValid && Number.isFinite(scr) && (gender === 'male' || gender === 'female');
 
     const recBox  = document.getElementById('recCrclBox');
     const recText = document.getElementById('recCrclText');
@@ -795,23 +940,42 @@ function calculate() {
     const pasRec   = w <= 50 ? '8 g' : (w <= 70 ? '10 g' : '12 g');
 
     const groupC = [
-        { name:'Amikacin (Am)',             sub:`15–20 mg/kg/day · max 1,000 mg`,  icon:'💉', renalAdj:true,  mgKgRange:[15,20], maxMg:1000,
+        { name:'Amikacin (Am)',             sub:`15–20 mg/kg/day · max 1,000 mg`,  icon:'💉', renalAdj:true, renalThreshold:50, mgKgRange:[15,20], maxMg:1000,
           calcRange:amkCalc, rec:mdrRec(amkRec,'#164e63'),
           ageWarn: ageOver65,
           ageWarnMsg: 'เสี่ยง ototoxicity และ nephrotoxicity สูงขึ้น ติดตาม TDM (ถ้า รพ. ทำได้)',
           dwNote: allFilled && gender ? `คำนวณจาก ${amkDWLabel} (${amkDW.toFixed(1)} kg)` : '',
-          renal:'<div class="font-bold text-red-700">15 mg/kg</div><div class="text-[9px] text-red-600 font-bold">2–3×/สัปดาห์</div>' },
+          renalMobileHint: '2–3 ครั้ง/สัปดาห์',
+          renalFn: (crcl) => {
+            if (crcl === null) return '<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl &lt;50:<br>2–3 ครั้ง/สัปดาห์</div>';
+            if (crcl >= 50)   return '<span class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</span>';
+            return '<div class="font-bold text-red-700">15 mg/kg</div><div class="text-[11px] text-red-600 font-bold">2–3 ครั้ง/สัปดาห์</div>';
+          }},
         { name:'Ethionamide/Pto',           sub:'15–20 mg/kg/day · Thai NTP 6.3',  icon:'💊', renalAdj:false, mgKgRange:[15,20], maxMg:1000,
           calcRange:`${Math.round(w*15)} – ${Math.round(w*20)} mg`,
           rec:mdrRec(etoRec,'#164e63'), renal:mdrRenal('',false) },
-        { name:'Imipenem-cilastatin (Ipm)', sub:'Group C — ร่วมกับ Amox-clav',     icon:'💉', renalAdj:true,  mgKgRange:null, maxMg:null,
+        { name:'Imipenem-cilastatin (Ipm)', sub:'Group C — ร่วมกับ Amox-clav',     icon:'💉', renalAdj:true, renalThreshold:40, mgKgRange:null, maxMg:null,
           calcRange:'-',
           rec:'<div class="font-bold" style="font-size:16px;color:#164e63">1,000 mg BID</div><div class="text-[9px] text-slate-500">IM/IV + Amox-clav 375 mg TID</div>',
-          renal:'<div class="text-red-700 font-bold text-[10px]">ปรับตาม CrCl<br>(500–1,000 mg)</div>' },
-        { name:'Meropenem (Mpm)',            sub:'Group C',                          icon:'💉', renalAdj:true,  mgKgRange:null, maxMg:null,
+          renalMobileHint: 'ลด dose',
+          renalFn: (crcl) => {
+            if (crcl === null) return '<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl 20–40: 750 mg q12h<br>CrCl &lt;20: 500 mg q12h<br>CrCl &lt;15: ห้ามใช้</div>';
+            if (crcl > 40)    return '<span class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</span>';
+            if (crcl < 15)    return '<div class="font-bold text-red-700 text-[11px]">ห้ามใช้</div><div class="text-[9px] text-red-600">ยกเว้น HD ใน 48 ชม.</div><div class="text-[9px] text-red-500 font-semibold">⚠ เสี่ยง seizure</div>';
+            if (crcl < 20)    return '<div class="font-bold text-red-700">500 mg</div><div class="text-[11px] text-red-600 font-bold">q12h</div><div class="text-[9px] text-red-500">⚠ เสี่ยง seizure</div>';
+            return '<div class="font-bold text-red-700">750 mg</div><div class="text-[11px] text-red-600 font-bold">q12h</div><div class="text-[9px] text-red-400">(CrCl 20–40)</div>';
+          }},
+        { name:'Meropenem (Mpm)',            sub:'Group C',                          icon:'💉', renalAdj:true, renalThreshold:50, mgKgRange:null, maxMg:null,
           calcRange:'-',
           rec:'<div class="font-bold" style="font-size:16px;color:#164e63">1,000–2,000 mg TID</div><div class="text-[9px] text-slate-500">IV (20–35 mg/kg/day)</div>',
-          renal:'<div class="text-red-700 font-bold text-[10px]">ปรับตาม CrCl</div>' },
+          renalMobileHint: 'ยืด interval',
+          renalFn: (crcl) => {
+            if (crcl === null) return '<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl 26–50: q12h<br>CrCl 10–25: ครึ่ง dose q12h<br>CrCl &lt;10: ครึ่ง dose q24h</div>';
+            if (crcl > 50)    return '<span class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</span>';
+            if (crcl < 10)    return '<div class="font-bold text-red-700">500–1,000 mg</div><div class="text-[11px] text-red-600 font-bold">q24h</div>';
+            if (crcl < 26)    return '<div class="font-bold text-red-700">500–1,000 mg</div><div class="text-[11px] text-red-600 font-bold">q12h</div>';
+            return '<div class="font-bold text-red-700">1,000–2,000 mg</div><div class="text-[11px] text-red-600 font-bold">q12h</div><div class="text-[9px] text-red-400">(CrCl 26–50)</div>';
+          }},
         { name:'Aminosalicylic acid (PAS)',     sub:'150 mg/kg/day · max 12 g',        icon:'💊', renalAdj:false, mgKgRange:[140,160], maxMg:12000,
           calcRange:`${pasG} g`, rec:mdrRec(pasRec,'#164e63'), renal:mdrRenal('',false) },
         { name:'Delamanid (Dlm)',            sub:'',                                 icon:'💊', renalAdj:false, mgKgRange:null, maxMg:null,
@@ -823,10 +987,10 @@ function calculate() {
     //  RENDER TABLE
     // ════════════════════════════════════════
     function renderTable(drugs, tbodyId, hoverCls, textCls, borderCls) {
-        const blink = finalCrcl !== null && finalCrcl < 30;
         let html = '';
         drugs.forEach(d => {
-            const rb      = blink && d.renalAdj;
+            const renalThresh = d.renalThreshold !== undefined ? d.renalThreshold : 30;
+            const rb          = finalCrcl !== null && d.renalAdj && finalCrcl < renalThresh;
             const rowBg   = rb ? 'style="background:#fff1f2"' : '';
             const rCls    = rb
                 ? 'p-1.5 text-center renal-blink text-red-900'
@@ -844,8 +1008,8 @@ function calculate() {
             // Mobile renal hint ใต้ rec dose
             const renalHintMobile = d.renalAdj
                 ? (rb
-                    ? `<div class="md:hidden mt-0.5 text-[9px] font-bold text-red-600">🔴 3 ครั้ง/สัปดาห์ (จ.พ.ศ.)</div>`
-                    : `<div class="md:hidden mt-0.5 text-[9px] text-red-400">🔴 ต้องปรับ CrCl &lt;30</div>`)
+                    ? `<div class="md:hidden mt-0.5 text-[9px] font-bold text-red-600">🔴 ${d.renalMobileHint || '3 ครั้ง/สัปดาห์ (จ.พ.ศ.)'}</div>`
+                    : `<div class="md:hidden mt-0.5 text-[9px] text-red-400">🔴 ต้องปรับ CrCl &lt;${renalThresh}</div>`)
                 : '';
 
             // mg/kg cell
@@ -917,11 +1081,13 @@ function calculate() {
                 </td>
                 ${mgKgCell}
                 <td class="${rCls} hidden md:table-cell" ${rStyle}>
-                    ${rb
-                        ? d.renal
-                        : d.renalAdj
-                            ? `<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl &lt;30:<br>ปรับเป็น 3 ครั้ง/สัปดาห์<br><span style="color:#fca5a5">(จ.พ.ศ.)</span></div>`
-                            : `<div class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</div>`
+                    ${d.renalFn
+                        ? d.renalFn(finalCrcl)
+                        : rb
+                            ? d.renal
+                            : d.renalAdj
+                                ? `<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl &lt;${renalThresh}:<br>ปรับเป็น 3 ครั้ง/สัปดาห์<br><span style="color:#fca5a5">(จ.พ.ศ.)</span></div>`
+                                : `<div class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</div>`
                     }
                 </td>
             </tr>`;
@@ -1007,4 +1173,6 @@ function calculate() {
         });
     }
     document.getElementById('fdcBody').innerHTML = fdcHTML;
+
+    calcFdcReverse();
 }

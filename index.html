@@ -39,8 +39,8 @@
     <div class="p-1.5 md:p-2 space-y-1.5">
 
         <!-- Patient Inputs -->
-        <div class="bg-teal-50/70 px-2.5 py-2 rounded-lg border border-teal-100 shadow-sm sticky top-0 z-30 backdrop-blur-sm">
-            <div id="inputWrapper" class="flex flex-col md:flex-row gap-3 md:items-center w-full">
+        <div class="bg-teal-50/70 px-2.5 pt-2 pb-0 rounded-lg border border-teal-100 shadow-sm sticky top-0 z-30 backdrop-blur-sm">
+            <div id="inputWrapper" class="flex flex-col md:flex-row gap-3 md:items-start w-full">
 
                 <!-- Row 1: Weight + slider -->
                 <div id="weightSection" class="w-full md:w-1/3">
@@ -48,9 +48,12 @@
                     <div class="flex items-center gap-2">
                         <div class="flex items-center gap-1 shrink-0">
                             <input type="number" id="weight" value="50" min="20" max="200"
-                                class="w-14 md:w-20 h-8 md:h-10 px-1 text-base md:text-lg font-bold text-teal-900 border-2 border-teal-300 bg-white rounded focus:ring-2 focus:ring-teal-500 text-center outline-none"
+                                class="w-14 md:w-20 h-8 md:h-10 px-1 text-base md:text-lg font-bold text-teal-900 border-2 border-teal-300 bg-white rounded-lg focus:ring-2 focus:ring-teal-500 text-center outline-none"
                                 oninput="syncWeight('input')">
-                            <span class="text-teal-800 font-bold text-xs">kg</span>
+                            <button onclick="toggleWeightUnit()" id="weightUnitBtn"
+                                class="shrink-0 h-8 md:h-10 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-2 border-teal-300 rounded-lg hover:bg-teal-100 transition-colors whitespace-nowrap">
+                                kg ⇄
+                            </button>
                         </div>
                         <input type="range" id="weightSlider" value="50" min="20" max="200" step="1"
                             class="flex-1 h-1.5 bg-teal-200 rounded-lg appearance-none cursor-pointer"
@@ -61,7 +64,7 @@
                 <!-- Row 2+: 4 fields — mobile reorders via CSS order -->
                 <div id="fieldGrid" class="w-full md:w-2/3 grid grid-cols-2 lg:grid-cols-4 gap-2 items-end" style="display:grid">
                     <div id="fieldGender">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5 h-7 flex items-end">เพศ</label>
+                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">เพศกำเนิด</label>
                         <div class="flex h-9 rounded-lg border-2 border-teal-300 overflow-hidden">
                             <button id="btnFemale" onclick="setGender('female')"
                                 class="flex-1 text-sm font-semibold transition-colors border-r border-teal-300 bg-white text-slate-400">
@@ -73,26 +76,42 @@
                             </button>
                         </div>
                         <input type="hidden" id="gender" value="">
+                        <div id="genderWarnInline" style="height:20px;visibility:hidden;display:flex;align-items:flex-end;padding-bottom:1px">
+                            <span class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ กรุณาเลือกเพศ</span>
+                        </div>
                     </div>
                     <div id="fieldScr">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5 h-7 flex items-end">Serum Creatinine (mg/dL)</label>
-                        <div class="field-wrap">
+                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">Serum Creatinine (<span id="scrUnitLabel">mg/dL</span>)</label>
+                        <div class="field-wrap flex gap-1 items-center">
                             <input type="number" id="scr" step="0.01" min="0.1" max="30" oninput="calculate()"
-                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 1.0">
+                                class="flex-1 h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 1.0">
+                            <button onclick="toggleScrUnit()" id="scrUnitBtn"
+                                class="shrink-0 h-9 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-2 border-teal-300 rounded-lg hover:bg-teal-100 transition-colors whitespace-nowrap">
+                                mg/dL ⇄
+                            </button>
                         </div>
+                        <div style="height:20px"></div>
                     </div>
                     <div id="fieldHeight">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5 h-7 flex items-end">ส่วนสูง (cm)</label>
-                        <div class="field-wrap">
+                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">ส่วนสูง (<span id="heightUnitLabel">cm</span>)</label>
+                        <div class="field-wrap flex gap-1 items-center">
                             <input type="number" id="height" min="100" max="230" oninput="calculate()"
-                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 165">
+                                class="flex-1 h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 165">
+                            <button onclick="toggleHeightUnit()" id="heightUnitBtn"
+                                class="shrink-0 h-9 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-2 border-teal-300 rounded-lg hover:bg-teal-100 transition-colors whitespace-nowrap">
+                                cm ⇄
+                            </button>
                         </div>
+                        <div style="height:20px"></div>
                     </div>
                     <div id="fieldAge">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5 h-7 flex items-end">อายุ (ปี)</label>
+                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">อายุ (ปี)</label>
                         <div class="field-wrap">
-                            <input type="number" id="age" min="15" max="120" oninput="calculate()"
-                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 45">
+                            <input type="number" id="age" min="1" max="120" oninput="calculate()"
+                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 45">
+                        </div>
+                        <div id="ageWarnInline" style="height:20px;visibility:hidden;display:flex;align-items:flex-end;padding-bottom:1px">
+                            <span class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ CrCl อาจไม่แม่นยำ</span>
                         </div>
                     </div>
                 </div>
@@ -106,7 +125,7 @@
             <div id="crclHeaderBw" class="bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg shadow-sm">
                 <div id="crclTitleRow" class="mb-1 border-b border-slate-200 pb-1 flex flex-wrap justify-between items-center">
                     <h3 class="text-sm font-bold text-teal-700">Creatinine Clearance <span class="font-normal text-slate-400 text-xs">— Calculate by <span class="font-semibold text-slate-600">Cockcroft-Gault Equation</span></span></h3>
-                    <p class="text-[10px] text-slate-500">อิงตาม Actual / Ideal / Adjusted BW</p>
+                    <p class="text-[10px] text-slate-500">อิงตาม Actual / Ideal / Adjusted BW · <span id="ageRangeNote" class="text-slate-500">เฉพาะอายุ 18–92 ปี</span></p>
                 </div>
                 <!-- Content row: BW boxes + Rec box side by side on desktop -->
                 <div id="crclContentRow" class="flex gap-2 items-stretch">
