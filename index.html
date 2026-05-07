@@ -6,6 +6,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫁</text></svg>">
     <title>TB Dose Calculator — Thai NTP 2021</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -19,11 +20,12 @@
         <div class="flex items-center justify-center gap-2 mt-0.5 flex-wrap">
             <p id="mainSubtitle" class="text-teal-100 text-[11px] md:text-xs">
                 ข้อมูลอ้างอิง:
-                <a href="https://ddc.moph.go.th/dtb/publishinfodetail.php?publish=12532&deptcode=dtb" target="_blank" class="underline hover:text-white transition-colors">Thai NTP 2021</a>
+                <a href="https://ddc.moph.go.th/dtb/publishinfodetail.php?publish=12532&deptcode=dtb" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','thai_ntp_2021')">Thai NTP 2021</a>
                 ·
-                <a href="https://www.who.int/publications/i/item/9789240107243" target="_blank" class="underline hover:text-white transition-colors">WHO Guidelines 2025</a>
+                <a href="https://www.who.int/publications/i/item/9789240107243" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','who_guidelines_2025')">WHO Guidelines 2025</a>
             </p>
-            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.5.0</span>
+            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.0</span>
+            <span class="text-teal-200 text-[10px] md:text-[11px]">· 👥 วันนี้ <span id="statsToday">-</span> · รวม <span id="statsTotal">-</span> ครั้ง</span>
             <div class="flex gap-1.5 shrink-0">
                 <button onclick="resetAll()"
                     class="bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors border border-white/30">
@@ -419,12 +421,13 @@
         <!-- Footer -->
         <div class="text-center text-[11px] text-slate-400 pt-2 pb-1 border-t border-slate-100 mt-2">
             Developed by Sirawit Phaopha, Pharmacist · Prang Ku Hospital, Sisaket<br>
-            Version 1.4.1 · Released May 2026
+            Version 1.6.0 · Released 7 May 2026
         </div>
 
     </div>
 </div>
 
 <script src="script.js"></script>
+<script src="analytics.js"></script>
 </body>
 </html>

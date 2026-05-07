@@ -148,7 +148,7 @@ function calcFdcReverse() {
     const w     = parseFloat(document.getElementById('weight').value) || 0;
     const res   = document.getElementById('fdcReverseResult');
 
-    if (rfr <= 0 && rf150 <= 0 && rf300 <= 0) { res.classList.add('hidden'); return; }
+    if (rfr <= 0 && rf150 <= 0 && rf300 <= 0) { res.classList.add('hidden'); scheduleFdcReverseTracking(0,0,0,0,0,0,0); return; }
     res.classList.remove('hidden');
 
     // คำนวณ mg รวม
@@ -157,6 +157,7 @@ function calcFdcReverse() {
     const zMg = rfr*400;
     const eMg = rfr*275;
 
+    scheduleFdcReverseTracking(rfr, rf150, rf300, rMg, hMg, zMg, eMg);
     document.getElementById('fdcR_mg').textContent = `${rMg} mg`;
     document.getElementById('fdcH_mg').textContent = `${hMg} mg`;
     document.getElementById('fdcZ_mg').textContent = zMg > 0 ? `${zMg} mg` : '—';
@@ -302,6 +303,7 @@ function toggleWeightUnit() {
     const kg = weightUnit === 'lb' ? parseFloat(input.value) / 2.20462 : parseFloat(input.value);
     if (!isNaN(kg)) slider.value = Math.min(200, Math.max(20, kg));
     calculate();
+    trackEvent('unit_toggle', 'weight_' + weightUnit);
 }
 
 // ════════════════════════════════════════════
@@ -328,6 +330,7 @@ function toggleHeightUnit() {
         LIMITS.height = { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)', maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' };
     }
     calculate();
+    trackEvent('unit_toggle', 'height_' + heightUnit);
 }
 
 // ════════════════════════════════════════════
@@ -354,6 +357,7 @@ function toggleScrUnit() {
         LIMITS.scr = { min:0.1, max:30, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' };
     }
     calculate();
+    trackEvent('unit_toggle', 'scr_' + scrUnit);
 }
 
 // ════════════════════════════════════════════
@@ -413,6 +417,7 @@ function resetAll() {
 
     // doseCache
     Object.keys(doseCache).forEach(k => delete doseCache[k]);
+    trackEvent('reset');
 
     // remove all validation styles
     document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
@@ -983,6 +988,19 @@ function calculate() {
           renal:mdrRenal('',false) }
     ];
 
+    // เก็บค่าโดสทุกตัวให้ analytics.js อ่านได้
+    window._lastDoses = {
+        w,
+        h: H.mg, r: R.mg, z: Z.mg, e: E.mg, s: S.mg,
+        lfx: 750, mfx: 400, bdq: 400, lzd: 600, cfz: 100,
+        cs:  w <= 50 ? 500 : w <= 70 ? 750 : 1000,
+        trd: w <= 50 ? 500 : w <= 70 ? 750 : 1000,
+        am:  amkDW <= 50 ? 750 : 1000,
+        pto: w <= 45 ? 500 : w <= 70 ? 750 : 1000,
+        pas: w <= 50 ? 8000 : w <= 70 ? 10000 : 12000,
+        dlm: 200
+    };
+
     // ════════════════════════════════════════
     //  RENDER TABLE
     // ════════════════════════════════════════
@@ -1175,4 +1193,5 @@ function calculate() {
     document.getElementById('fdcBody').innerHTML = fdcHTML;
 
     calcFdcReverse();
+    scheduleTrackCalculation();
 }
