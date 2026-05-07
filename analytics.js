@@ -155,12 +155,13 @@ async function doTrackFdcReverse(rfr, rf150, rf300, rMg, hMg, zMg, eMg) {
 }
 
 // ─── บันทึก event (reset, unit toggle, link) ─
-async function trackEvent(eventType, eventDetail = null) {
+async function trackEvent(eventType, eventDetail = null, eventValue = null) {
     try {
         await _db.from('events').insert({
             session_id:   SESSION_ID,
             event_type:   eventType,
-            event_detail: eventDetail
+            event_detail: eventDetail,
+            event_value:  eventValue
         });
     } catch(e) {}
 }

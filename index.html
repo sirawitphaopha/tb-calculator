@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/6.11.0/css/flag-icons.min.css">
 </head>
 <body class="bg-teal-50 min-h-screen p-2 md:p-3" onload="calculate()">
 
@@ -16,20 +17,24 @@
 
     <!-- Header -->
     <div class="bg-gradient-to-r from-teal-700 to-cyan-600 px-2.5 py-1.5 text-white text-center">
-        <h1 id="mainTitle" class="font-bold text-[13px] md:text-2xl whitespace-nowrap overflow-hidden text-ellipsis">Tuberculosis Dose Calculator · สำหรับผู้ใหญ่อายุ &gt;15 ปี</h1>
+        <h1 id="mainTitle" data-i18n="title" class="font-bold text-[13px] md:text-2xl whitespace-nowrap overflow-hidden text-ellipsis">Tuberculosis Dose Calculator · สำหรับผู้ใหญ่อายุ >15 ปี</h1>
         <div class="flex items-center justify-center gap-2 mt-0.5 flex-wrap">
             <p id="mainSubtitle" class="text-teal-100 text-[11px] md:text-xs">
-                ข้อมูลอ้างอิง:
+                <span data-i18n="subtitle_ref">ข้อมูลอ้างอิง:</span>
                 <a href="https://ddc.moph.go.th/dtb/publishinfodetail.php?publish=12532&deptcode=dtb" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','thai_ntp_2021')">Thai NTP 2021</a>
                 ·
                 <a href="https://www.who.int/publications/i/item/9789240107243" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','who_guidelines_2025')">WHO Guidelines 2025</a>
             </p>
             <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.0</span>
-            <span class="text-teal-200 text-[10px] md:text-[11px]">· 👥 วันนี้ <span id="statsToday">-</span> · รวม <span id="statsTotal">-</span> ครั้ง</span>
+            <span class="text-teal-200 text-[10px] md:text-[11px]">· 👥 <span data-i18n="stats_today_label">วันนี้</span> <span id="statsToday">-</span> · <span data-i18n="stats_total_label">รวม</span> <span id="statsTotal">-</span> <span data-i18n="stats_unit">ครั้ง</span></span>
             <div class="flex gap-1.5 shrink-0">
                 <button onclick="resetAll()"
                     class="bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors border border-white/30">
-                    🔄 ล้างค่า
+                    🔄 <span data-i18n="btn_reset">ล้างค่า</span>
+                </button>
+                <button id="langToggleBtn" onclick="toggleLang()"
+                    class="bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors border border-white/30 flex items-center gap-1">
+                    <span id="langFlag" class="fi fi-us"></span> EN
                 </button>
                 <button onclick="toggleMobileView()" id="mobileToggleBtn"
                     class="hidden md:block bg-white/20 hover:bg-white/30 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg transition-colors border border-white/30">
@@ -47,7 +52,7 @@
 
                 <!-- Row 1: Weight + slider -->
                 <div id="weightSection" class="w-full md:w-1/3">
-                    <label class="block text-teal-900 font-bold text-xs mb-1">น้ำหนักตัว (Actual BW)</label>
+                    <label data-i18n="lbl_weight" class="block text-teal-900 font-bold text-xs mb-1">น้ำหนักตัว (ABW)</label>
                     <div class="flex items-center gap-2">
                         <div class="flex items-center gap-1 shrink-0">
                             <input type="number" id="weight" value="50" min="20" max="200"
@@ -67,27 +72,27 @@
                 <!-- Row 2+: 4 fields — mobile reorders via CSS order -->
                 <div id="fieldGrid" class="w-full md:w-2/3 grid grid-cols-2 lg:grid-cols-4 gap-2 items-end" style="display:grid">
                     <div id="fieldGender">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">เพศกำเนิด</label>
+                        <label data-i18n="lbl_sex" class="block text-teal-900 font-semibold text-[11px] mb-0.5">เพศกำเนิด</label>
                         <div class="flex h-9 rounded-lg border-2 border-teal-300 overflow-hidden">
                             <button id="btnFemale" onclick="setGender('female')"
                                 class="flex-1 text-sm font-semibold transition-colors border-r border-teal-300 bg-white text-slate-400">
-                                หญิง
+                                <span data-i18n="btn_female">หญิง</span>
                             </button>
                             <button id="btnMale" onclick="setGender('male')"
                                 class="flex-1 text-sm font-semibold transition-colors bg-white text-slate-400">
-                                ชาย
+                                <span data-i18n="btn_male">ชาย</span>
                             </button>
                         </div>
                         <input type="hidden" id="gender" value="">
                         <div id="genderWarnInline" style="height:20px;visibility:hidden;display:flex;align-items:flex-end;padding-bottom:1px">
-                            <span class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ กรุณาเลือกเพศ</span>
+                            <span data-i18n="warn_sex" class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ กรุณาเลือกเพศ</span>
                         </div>
                     </div>
                     <div id="fieldScr">
                         <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">Serum Creatinine (<span id="scrUnitLabel">mg/dL</span>)</label>
                         <div class="field-wrap flex gap-1 items-center">
                             <input type="number" id="scr" step="0.01" min="0.1" max="30" oninput="calculate()"
-                                class="flex-1 h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 1.0">
+                                class="flex-1 h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 1.0" data-i18n-placeholder="ph_scr">
                             <button onclick="toggleScrUnit()" id="scrUnitBtn"
                                 class="shrink-0 h-9 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-2 border-teal-300 rounded-lg hover:bg-teal-100 transition-colors whitespace-nowrap">
                                 mg/dL ⇄
@@ -96,10 +101,10 @@
                         <div style="height:20px"></div>
                     </div>
                     <div id="fieldHeight">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">ส่วนสูง (<span id="heightUnitLabel">cm</span>)</label>
+                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5"><span data-i18n="lbl_height">ส่วนสูง</span> (<span id="heightUnitLabel">cm</span>)</label>
                         <div class="field-wrap flex gap-1 items-center">
                             <input type="number" id="height" min="100" max="230" oninput="calculate()"
-                                class="flex-1 h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 165">
+                                class="flex-1 h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 165" data-i18n-placeholder="ph_height">
                             <button onclick="toggleHeightUnit()" id="heightUnitBtn"
                                 class="shrink-0 h-9 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-2 border-teal-300 rounded-lg hover:bg-teal-100 transition-colors whitespace-nowrap">
                                 cm ⇄
@@ -108,13 +113,13 @@
                         <div style="height:20px"></div>
                     </div>
                     <div id="fieldAge">
-                        <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">อายุ (ปี)</label>
+                        <label data-i18n="lbl_age" class="block text-teal-900 font-semibold text-[11px] mb-0.5">อายุ (ปี)</label>
                         <div class="field-wrap">
                             <input type="number" id="age" min="1" max="120" oninput="calculate()"
-                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 45">
+                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 45" data-i18n-placeholder="ph_age">
                         </div>
                         <div id="ageWarnInline" style="height:20px;visibility:hidden;display:flex;align-items:flex-end;padding-bottom:1px">
-                            <span class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ CrCl อาจไม่แม่นยำ</span>
+                            <span data-i18n="warn_crcl_age" class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ CrCl อาจไม่แม่นยำ</span>
                         </div>
                     </div>
                 </div>
@@ -128,7 +133,7 @@
             <div id="crclHeaderBw" class="bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg shadow-sm">
                 <div id="crclTitleRow" class="mb-1 border-b border-slate-200 pb-1 flex flex-wrap justify-between items-center">
                     <h3 class="text-sm font-bold text-teal-700">Creatinine Clearance <span class="font-normal text-slate-400 text-xs">— Calculate by <span class="font-semibold text-slate-600">Cockcroft-Gault Equation</span></span></h3>
-                    <p class="text-[10px] text-slate-500">อิงตาม Actual / Ideal / Adjusted BW · <span id="ageRangeNote" class="text-slate-500">เฉพาะอายุ 18–92 ปี</span></p>
+                    <p class="text-[10px] text-slate-500"><span data-i18n="crcl_bw_basis">อิงตาม Actual / Ideal / Adjusted BW</span> · <span id="ageRangeNote" data-i18n="age_range_note" class="text-slate-500">เฉพาะอายุ 18–92 ปี</span></p>
                 </div>
                 <!-- Content row: BW boxes + Rec box side by side on desktop -->
                 <div id="crclContentRow" class="flex gap-2 items-stretch">
@@ -427,6 +432,7 @@
     </div>
 </div>
 
+<script src="lang.js"></script>
 <script src="script.js"></script>
 <script src="analytics.js"></script>
 </body>

@@ -96,6 +96,8 @@ function calcCrCl(bw, age, scr, gender) {
 //  DOSE CACHE — เก็บค่า input โดสจริงไม่ให้หายตอน re-render
 // ════════════════════════════════════════════
 const doseCache = {};
+const _validationErrorCache = {};  // field → last tracked invalid value
+const _validationErrorTimer = {};  // field → debounce timer
 let scrUnit    = 'mgdl'; // 'mgdl' | 'umol'
 let weightUnit = 'kg';  // 'kg'   | 'lb'
 let heightUnit = 'cm';  // 'cm'   | 'inch'
@@ -105,12 +107,12 @@ let heightUnit = 'cm';  // 'cm'   | 'inch'
 // ════════════════════════════════════════════
 function getBmiClass(bmi) {
     // WHO Asia-Pacific cutoffs
-    if (bmi < 18.5) return { label:'Underweight (ผอม)',            color:'#d97706', bg:'#fef3c7', barPct: 20 }; // amber
-    if (bmi < 23)   return { label:'Normal Weight (ปกติ)',          color:'#16a34a', bg:'#dcfce7', barPct: 40 }; // green
-    if (bmi < 25)   return { label:'Overweight (น้ำหนักเกิน)',      color:'#f97316', bg:'#fff7ed', barPct: 58 }; // orange
-    if (bmi < 30)   return { label:'Obese I (อ้วนระดับ 1)',         color:'#f87171', bg:'#fee2e2', barPct: 70 }; // red-400
-    if (bmi < 35)   return { label:'Obese II (อ้วนระดับ 2)',        color:'#ef4444', bg:'#fee2e2', barPct: 84 }; // red-500
-    return               { label:'Obese III (อ้วนระดับ 3)',        color:'#dc2626', bg:'#fee2e2', barPct:100 }; // red-600
+    if (bmi < 18.5) return { label: t('bmi_underweight'), color:'#d97706', bg:'#fef3c7', barPct: 20 };
+    if (bmi < 23)   return { label: t('bmi_normal'),      color:'#16a34a', bg:'#dcfce7', barPct: 40 };
+    if (bmi < 25)   return { label: t('bmi_overweight'),  color:'#f97316', bg:'#fff7ed', barPct: 58 };
+    if (bmi < 30)   return { label: t('bmi_obese1'),      color:'#f87171', bg:'#fee2e2', barPct: 70 };
+    if (bmi < 35)   return { label: t('bmi_obese2'),      color:'#ef4444', bg:'#fee2e2', barPct: 84 };
+    return               { label: t('bmi_obese3'),      color:'#dc2626', bg:'#fee2e2', barPct:100 };
 }
 
 // ════════════════════════════════════════════
@@ -212,11 +214,10 @@ function mgKgColor(val, min, max) {
 
 
 const LIMITS = {
-    weight: { min:20,  max:200, minMsg:'น้ำหนักต่ำเกินไป (ต่ำสุด 20 kg)',    maxMsg:'น้ำหนักสูงเกินไป (สูงสุด 200 kg)' },
-    height: { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)',   maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' },
-    // BUG FIX: CG trial validated อายุ 18–92 ปี ไม่ใช่ 15–120
-    age:    { min:18,  max:92,  minMsg:'CrCl อาจไม่แม่นยำ', maxMsg:'CrCl อาจไม่แม่นยำ' },
-    scr:    { min:0.1, max:30,  minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' }
+    weight: { min:20,  max:200, minKey:'err_weight_low',   maxKey:'err_weight_high' },
+    height: { min:100, max:230, minKey:'err_height_low',   maxKey:'err_height_high' },
+    age:    { min:15,  max:110, minKey:'err_age_low',      maxKey:'err_age_high' },
+    scr:    { min:0.1, max:30,  minKey:'err_scr_low_mgdl', maxKey:'err_scr_high_mgdl' }
 };
 
 function validateField(id) {
@@ -232,24 +233,56 @@ function validateField(id) {
         if (id === 'age') { const aw = document.getElementById('ageWarnInline'); if (aw) aw.style.visibility = 'hidden'; }
         return true;
     }
-    const msg = val < lim.min ? lim.minMsg : val > lim.max ? lim.maxMsg : null;
-    if (msg) {
-        // อายุ: แสดง warning สีส้มแต่ไม่ block การคำนวณ
-        if (id === 'age') {
-            el.style.borderColor = '#f97316';
-            el.style.backgroundColor = '#fff7ed';
-            const ageWarnEl = document.getElementById('ageWarnInline');
-            if (ageWarnEl) ageWarnEl.style.visibility = 'visible';
-            return true; // ไม่ block
+    // Age: hard block <15/>110; soft CrCl warning outside 18–92
+    if (id === 'age') {
+        const ageWarnEl = document.getElementById('ageWarnInline');
+        if (val < 15 || val > 110) {
+            const msg = val < 15 ? t('err_age_low') : t('err_age_high');
+            el.classList.add('input-error');
+            el.style.borderColor = ''; el.style.backgroundColor = '';
+            if (wrap) { const tip = document.createElement('div'); tip.className='tooltip-error'; tip.textContent=msg; wrap.appendChild(tip); }
+            if (ageWarnEl) ageWarnEl.style.visibility = 'hidden';
+            if (typeof trackEvent === 'function') {
+                clearTimeout(_validationErrorTimer.age);
+                _validationErrorTimer.age = setTimeout(() => {
+                    if (_validationErrorCache.age !== val) {
+                        _validationErrorCache.age = val;
+                        trackEvent('validation_error', 'age', val);
+                    }
+                }, 1500);
+            }
+            return false;
         }
+        delete _validationErrorCache.age;
+        el.classList.remove('input-error');
+        if (val < 18 || val > 92) {
+            el.style.borderColor = '#f97316'; el.style.backgroundColor = '#fff7ed';
+            if (ageWarnEl) ageWarnEl.style.visibility = 'visible';
+        } else {
+            el.style.borderColor = ''; el.style.backgroundColor = '';
+            if (ageWarnEl) ageWarnEl.style.visibility = 'hidden';
+        }
+        return true;
+    }
+    const msg = val < lim.min ? t(lim.minKey) : val > lim.max ? t(lim.maxKey) : null;
+    if (msg) {
         el.classList.add('input-error');
         if (wrap) { const tip = document.createElement('div'); tip.className='tooltip-error'; tip.textContent=msg; wrap.appendChild(tip); }
+        if (typeof trackEvent === 'function') {
+            clearTimeout(_validationErrorTimer[id]);
+            _validationErrorTimer[id] = setTimeout(() => {
+                if (_validationErrorCache[id] !== val) {
+                    _validationErrorCache[id] = val;
+                    trackEvent('validation_error', id, val);
+                }
+            }, 1500);
+        }
         return false;
     }
+    delete _validationErrorCache[id];
     el.classList.remove('input-error');
     el.style.borderColor = '';
     el.style.backgroundColor = '';
-    if (id === 'age') { const aw = document.getElementById('ageWarnInline'); if (aw) aw.style.visibility = 'hidden'; }
     return true;
 }
 
@@ -260,15 +293,25 @@ function validateWeight(val) {
     const old    = document.getElementById('weightTooltip');
     if (old) old.remove();
     if (!val || isNaN(val)) { el.classList.remove('input-error'); slider.style.opacity='1'; return true; }
-    const msg = val < lim.min ? lim.minMsg : val > lim.max ? lim.maxMsg : null;
+    const msg = val < lim.min ? t(lim.minKey) : val > lim.max ? t(lim.maxKey) : null;
     if (msg) {
         el.classList.add('input-error'); slider.style.opacity='0.4';
         const tip = document.createElement('div'); tip.id='weightTooltip'; tip.className='tooltip-error';
         tip.style.cssText='position:absolute;z-index:50;margin-top:2px'; tip.textContent=msg;
         el.parentElement.parentElement.style.position='relative';
         el.parentElement.parentElement.appendChild(tip);
+        if (typeof trackEvent === 'function') {
+            clearTimeout(_validationErrorTimer.weight);
+            _validationErrorTimer.weight = setTimeout(() => {
+                if (_validationErrorCache.weight !== val) {
+                    _validationErrorCache.weight = val;
+                    trackEvent('validation_error', 'weight', val);
+                }
+            }, 1500);
+        }
         return false;
     }
+    delete _validationErrorCache.weight;
     el.classList.remove('input-error'); slider.style.opacity='1';
     return true;
 }
@@ -292,13 +335,13 @@ function toggleWeightUnit() {
         if (!isNaN(val)) input.value = Math.round(val * 2.20462);
         input.min = '44'; input.max = '441'; input.step = '1';
         btn.textContent = 'lb ⇄';
-        LIMITS.weight = { min:44, max:441, minMsg:'Weight too low (min 44 lb)', maxMsg:'Weight too high (max 441 lb)' };
+        LIMITS.weight = { min:44, max:441, minKey:'err_weight_low_lb', maxKey:'err_weight_high_lb' };
     } else {
         weightUnit = 'kg';
         if (!isNaN(val)) input.value = Math.round(val / 2.20462);
         input.min = '20'; input.max = '200'; input.step = '1';
         btn.textContent = 'kg ⇄';
-        LIMITS.weight = { min:20, max:200, minMsg:'น้ำหนักต่ำเกินไป (ต่ำสุด 20 kg)', maxMsg:'น้ำหนักสูงเกินไป (สูงสุด 200 kg)' };
+        LIMITS.weight = { min:20, max:200, minKey:'err_weight_low', maxKey:'err_weight_high' };
     }
     const kg = weightUnit === 'lb' ? parseFloat(input.value) / 2.20462 : parseFloat(input.value);
     if (!isNaN(kg)) slider.value = Math.min(200, Math.max(20, kg));
@@ -318,16 +361,16 @@ function toggleHeightUnit() {
         heightUnit = 'inch';
         if (!isNaN(val)) input.value = (val / 2.54).toFixed(1);
         input.min = '40'; input.max = '91'; input.step = '0.5';
-        input.placeholder = 'e.g. 65';
+        input.placeholder = t('ph_height_in');
         btn.textContent = 'in ⇄'; lbl.textContent = 'in';
-        LIMITS.height = { min:40, max:91, minMsg:'Height too low (min 40 in)', maxMsg:'Height too high (max 91 in)' };
+        LIMITS.height = { min:40, max:91, minKey:'err_height_low_in', maxKey:'err_height_high_in' };
     } else {
         heightUnit = 'cm';
         if (!isNaN(val)) input.value = Math.round(val * 2.54);
         input.min = '100'; input.max = '230'; input.step = '1';
-        input.placeholder = 'เช่น 165';
+        input.placeholder = t('ph_height');
         btn.textContent = 'cm ⇄'; lbl.textContent = 'cm';
-        LIMITS.height = { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)', maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' };
+        LIMITS.height = { min:100, max:230, minKey:'err_height_low', maxKey:'err_height_high' };
     }
     calculate();
     trackEvent('unit_toggle', 'height_' + heightUnit);
@@ -345,16 +388,16 @@ function toggleScrUnit() {
         scrUnit = 'umol';
         if (!isNaN(val)) input.value = Math.round(val * 88.4);
         input.step = '1'; input.min = '9'; input.max = '2652';
-        input.placeholder = 'เช่น 88';
+        input.placeholder = t('ph_scr_umol');
         btn.textContent = 'μmol/L ⇄'; lbl.textContent = 'μmol/L';
-        LIMITS.scr = { min:9, max:2652, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 9 μmol/L)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 2652 μmol/L)' };
+        LIMITS.scr = { min:9, max:2652, minKey:'err_scr_low_umol', maxKey:'err_scr_high_umol' };
     } else {
         scrUnit = 'mgdl';
         if (!isNaN(val)) input.value = (val / 88.4).toFixed(2);
         input.step = '0.01'; input.min = '0.1'; input.max = '30';
-        input.placeholder = 'เช่น 1.0';
+        input.placeholder = t('ph_scr');
         btn.textContent = 'mg/dL ⇄'; lbl.textContent = 'mg/dL';
-        LIMITS.scr = { min:0.1, max:30, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' };
+        LIMITS.scr = { min:0.1, max:30, minKey:'err_scr_low_mgdl', maxKey:'err_scr_high_mgdl' };
     }
     calculate();
     trackEvent('unit_toggle', 'scr_' + scrUnit);
@@ -376,26 +419,26 @@ function resetAll() {
         const wi = document.getElementById('weight');
         wi.min = '20'; wi.max = '200'; wi.step = '1';
         document.getElementById('weightUnitBtn').textContent = 'kg ⇄';
-        LIMITS.weight = { min:20, max:200, minMsg:'น้ำหนักต่ำเกินไป (ต่ำสุด 20 kg)', maxMsg:'น้ำหนักสูงเกินไป (สูงสุด 200 kg)' };
+        LIMITS.weight = { min:20, max:200, minKey:'err_weight_low', maxKey:'err_weight_high' };
     }
     // reset height unit to cm
     if (heightUnit !== 'cm') {
         heightUnit = 'cm';
         const hi = document.getElementById('height');
-        hi.min = '100'; hi.max = '230'; hi.step = '1'; hi.placeholder = 'เช่น 165';
+        hi.min = '100'; hi.max = '230'; hi.step = '1'; hi.placeholder = t('ph_height');
         document.getElementById('heightUnitBtn').textContent = 'cm ⇄';
         document.getElementById('heightUnitLabel').textContent = 'cm';
-        LIMITS.height = { min:100, max:230, minMsg:'ส่วนสูงต่ำเกินไป (ต่ำสุด 100 cm)', maxMsg:'ส่วนสูงสูงเกินไป (สูงสุด 230 cm)' };
+        LIMITS.height = { min:100, max:230, minKey:'err_height_low', maxKey:'err_height_high' };
     }
     // reset scr unit to mg/dL
     if (scrUnit !== 'mgdl') {
         scrUnit = 'mgdl';
         const scrInput = document.getElementById('scr');
         scrInput.step = '0.01'; scrInput.min = '0.1'; scrInput.max = '30';
-        scrInput.placeholder = 'เช่น 1.0';
+        scrInput.placeholder = t('ph_scr');
         document.getElementById('scrUnitBtn').textContent = 'mg/dL ⇄';
         document.getElementById('scrUnitLabel').textContent = 'mg/dL';
-        LIMITS.scr = { min:0.1, max:30, minMsg:'ค่า Cr ต่ำเกินไป (ต่ำสุด 0.1 mg/dL)', maxMsg:'ค่า Cr สูงเกินไป (สูงสุด 30 mg/dL)' };
+        LIMITS.scr = { min:0.1, max:30, minKey:'err_scr_low_mgdl', maxKey:'err_scr_high_mgdl' };
     }
     document.getElementById('gender').value = '';
     document.getElementById('btnMale').className   = 'flex-1 text-sm font-semibold transition-colors bg-white text-slate-400';
@@ -572,7 +615,7 @@ function calculate() {
     } else {
         bmiVal.innerHTML    = '--.- <span style="font-size:0.875rem;font-weight:600;color:#cbd5e1">kg/m²</span>';
         bmiVal.style.color  = '#cbd5e1';
-        bmiCls.textContent  = 'กรอกน้ำหนัก + ส่วนสูง';
+        bmiCls.textContent  = t('bmi_hint');
         bmiCls.style.color  = '#94a3b8';
         bmiBar.style.width  = '0%';
     }
@@ -580,9 +623,9 @@ function calculate() {
     // ── Serum Creatinine reference range + eGFR ─────────────
     const scrWarn = document.getElementById('scrRefWarning');
     const crRef = gender === 'male'
-        ? { min:0.7, max:1.2, label:'ชาย 0.7–1.2 mg/dL' }
-        : { min:0.5, max:1.0, label:'หญิง 0.5–1.0 mg/dL' };
-    const bothRef = 'ชาย 0.7–1.2 · หญิง 0.5–1.0 mg/dL';
+        ? { min:0.7, max:1.2, label: t('scr_male_ref') }
+        : { min:0.5, max:1.0, label: t('scr_female_ref') };
+    const bothRef = t('scr_both_ref');
 
     // คำนวณ eGFR CKD-EPI 2021
     function calcEGFR(scr, age, sex) {
@@ -603,13 +646,13 @@ function calculate() {
     scrWarn.classList.remove('hidden');
     if (Number.isFinite(scr) && scr < crRef.min) {
         scrWarn.className = 'text-[10px] mt-1.5 px-2 py-1 rounded border font-medium text-orange-800 bg-orange-50 border-orange-300';
-        if (line1El) line1El.innerHTML = `⚠️ Serum Creatinine ต่ำกว่าปกติ (ref ${crRef.label}) — ค่า CrCl อาจสูงกว่าความเป็นจริง เนื่องจากการผลิต creatinine ลดลง`;
+        if (line1El) line1El.innerHTML = t('scr_low', crRef.label);
     } else if (Number.isFinite(scr) && scr > crRef.max) {
         scrWarn.className = 'text-[10px] mt-1.5 px-2 py-1 rounded border font-medium text-yellow-800 bg-yellow-50 border-yellow-300';
-        if (line1El) line1El.innerHTML = `⚠️ Serum Creatinine สูงกว่าปกติ (ref ${crRef.label}) — อาจบ่งชี้การทำงานของไตลดลง ควรติดตาม CrCl อย่างใกล้ชิด`;
+        if (line1El) line1El.innerHTML = t('scr_high', crRef.label);
     } else {
         scrWarn.className = 'text-[10px] mt-1.5 px-2 py-1 rounded border font-medium text-slate-500 bg-slate-100 border-slate-200';
-        if (line1El) line1El.innerHTML = `Serum Creatinine อ้างอิง: ${bothRef}`;
+        if (line1El) line1El.innerHTML = t('scr_ref', bothRef);
     }
     // ── Update eGFR box ──────────────────────
     const egfrVal   = document.getElementById('egfrValue');
@@ -643,7 +686,7 @@ function calculate() {
             egfrVal.style.color    = '#cbd5e1';
             egfrVal.style.fontSize = '22px';
             egfrStage.innerHTML    = '';
-            egfrHint.textContent   = 'กรุณากรอก เพศ อายุ และ Cr';
+            egfrHint.textContent   = t('egfr_hint');
             if (egfrBarFill) { egfrBarFill.style.width = '0%'; egfrBarFill.style.background = '#cbd5e1'; }
             if (egfrBarEl)   egfrBarEl.style.marginTop = '36px';
         }
@@ -672,7 +715,7 @@ function calculate() {
     // ── แสดง error state ถ้ากรอกเกินขอบเขต ──
     if (hasError) {
         recBox.className = 'flex-1 min-w-0 bg-red-50 px-3 py-1.5 rounded flex items-center justify-between border border-red-300';
-        recText.innerHTML = '<span class="text-red-700 font-semibold">⚠️ ข้อมูลบางช่องไม่ถูกต้อง กรุณาตรวจสอบ</span>';
+        recText.innerHTML = `<span class="text-red-700 font-semibold">${t('crcl_error')}</span>`;
         numSpan.textContent = '---';
         numSpan.style.color = '#ef4444';
         warnEl.classList.add('hidden');
@@ -714,12 +757,12 @@ function calculate() {
         if (shortStature) {
             finalCrcl = cA;
             document.getElementById('boxABW').className = hi;
-            label = `ส่วนสูง &lt;152 cm → ใช้ <strong>Actual BW (${w.toFixed(1)} kg)</strong><br><span style="font-size:10px;color:#f97316">⚠️ อาจมีภาวะหลังค่อม ค่า CrCl อาจต่ำกว่าความเป็นจริง</span>`;
+            label = t('crcl_short_stature', w.toFixed(1));
             recBoxColor = 'flex-1 min-w-0 bg-orange-50 px-3 py-1.5 rounded flex items-center justify-between border border-orange-300';
             recTextColor = 'text-orange-700';
         } else if (w < ibw) {
             finalCrcl = cA; document.getElementById('boxABW').className = hi;
-            label = `Underweight → <strong>Actual BW (${w.toFixed(1)} kg)</strong><br><span style="font-size:10px;color:#d97706">⚠️ มวลกล้ามเนื้อน้อย ค่า CrCl อาจสูงกว่าความเป็นจริง</span>`;
+            label = `${t('bw_underweight')} → <strong>Actual BW (${w.toFixed(1)} kg)</strong><br><span style="font-size:10px;color:#d97706">${t('crcl_underweight_warn')}</span>`;
             recBoxColor = 'flex-1 min-w-0 bg-amber-50 px-3 py-1.5 rounded flex items-center justify-between border border-amber-300';
             recTextColor = 'text-amber-700';
         } else if (w > ibw * 1.2) {
@@ -730,13 +773,13 @@ function calculate() {
             else if (bmiVal < 35) { obColor='#ef4444'; obBg='bg-red-50';  obBorder='border-red-400'; }
             else                  { obColor='#dc2626'; obBg='bg-red-50';  obBorder='border-red-500'; }
             finalCrcl = cJ; document.getElementById('boxAdjBW').className = hi;
-            label = `Obese → <strong>Adjusted BW (${adjBw.toFixed(1)} kg)</strong>`;
+            label = `${t('bw_obese')} → <strong>Adjusted BW (${adjBw.toFixed(1)} kg)</strong>`;
             recBoxColor = `flex-1 min-w-0 ${obBg} px-3 py-1.5 rounded flex items-center justify-between border ${obBorder}`;
             recTextColor = '';
             recText.innerHTML = `<span style="color:${obColor}">${label}</span>`;
         } else {
             finalCrcl = cI; document.getElementById('boxIBW').className = hi;
-            label = `Normal → <strong>Ideal BW (${ibw.toFixed(1)} kg)</strong>`;
+            label = `${t('bw_normal')} → <strong>Ideal BW (${ibw.toFixed(1)} kg)</strong>`;
         }
 
         if (w <= ibw * 1.2) {
@@ -766,7 +809,7 @@ function calculate() {
             if (renalIcon2) { renalIcon2.textContent = '🚨'; renalIcon2.classList.remove('hidden'); renalIcon2.style.display = 'inline'; }
             const bz = document.getElementById('crclBottomZone');
             if (bz) { bz.style.background='#fff1f2'; bz.style.borderColor='#fca5a5'; }
-            warnEl.innerHTML = '🚨 <strong>CrCl &lt;30</strong> — ปรับ 3 ครั้ง/สัปดาห์';
+            warnEl.innerHTML = t('crcl_renal_low');
             warnEl.className = 'text-[10px] mt-0.5 font-bold text-red-700 bg-red-100 px-1.5 py-0.5 rounded border border-red-300 w-fit';
             recBox.className = 'flex-1 min-w-0 bg-red-50 px-3 py-1.5 rounded flex items-center justify-between border border-red-300';
             icon.textContent = '🚨';
@@ -776,7 +819,7 @@ function calculate() {
             if (renalIcon2) { renalIcon2.textContent = '🩺'; renalIcon2.classList.remove('hidden'); renalIcon2.style.display = 'inline'; }
             const bz = document.getElementById('crclBottomZone');
             if (bz) { bz.style.background='#f0fdf4'; bz.style.borderColor='#bbf7d0'; }
-            warnEl.innerHTML = '✅ CrCl ≥30 — ไม่ต้องปรับขนาดยา';
+            warnEl.innerHTML = t('crcl_renal_ok');
             warnEl.className = 'text-[10px] mt-0.5 font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 w-fit';
             recBox.className = 'flex-1 min-w-0 bg-emerald-100 px-3 py-1.5 rounded flex items-center justify-between border border-emerald-300';
             icon.textContent = '🩺';
@@ -787,7 +830,7 @@ function calculate() {
         const base = 'bw-box px-2 py-1 border border-slate-200 rounded text-center bg-white opacity-60 w-[95px] flex flex-col justify-center';
         ['boxABW','boxIBW','boxAdjBW'].forEach(id => document.getElementById(id).className = base);
         recBox.className = 'flex-1 min-w-0 bg-slate-100 px-3 py-1.5 rounded flex items-center justify-between border border-slate-200';
-        recText.innerHTML = 'กรุณากรอกข้อมูลให้ครบ';
+        recText.innerHTML = t('crcl_enter_data');
         numSpan.textContent = '···';
         numSpan.style.color = '#94a3b8';
         // ตอนยังไม่กรอก: แสดง mL/min บรรทัดเดียวกัน ซ่อน crclRow2
