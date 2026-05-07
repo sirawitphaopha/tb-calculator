@@ -57,6 +57,11 @@ const TRANSLATIONS = {
         warn_crcl_age:      '⚠ CrCl อาจไม่แม่นยำ',
         crcl_bw_basis:      'อิงตาม Actual / Ideal / Adjusted BW',
         age_range_note:     'เฉพาะอายุ 18–92 ปี',
+        // ── Footer ──────────────────────────────
+        footer_disclaimer:  'โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ',
+        footer_visitors:    'ผู้เข้าชม',
+        footer_dev:         'พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ',
+        footer_version:     'Version 1.6.2 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight (ผอม)',
         bmi_normal:         'Normal Weight (ปกติ)',
@@ -123,6 +128,11 @@ const TRANSLATIONS = {
         warn_crcl_age:      '⚠ CrCl may be unreliable',
         crcl_bw_basis:      'Based on Actual / Ideal / Adjusted BW',
         age_range_note:     'Valid for ages 18–92',
+        // ── Footer ──────────────────────────────
+        footer_disclaimer:  'This calculator is intended as a dosing reference only. Clinical decisions remain the responsibility of the treating clinician.',
+        footer_visitors:    'Visitors',
+        footer_dev:         'Developed by Sirawit Phaopha, Pharmacist · Prang Ku Hospital, Sisaket, Thailand',
+        footer_version:     'Version 1.6.2 · Released 8 May 2026',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight',
         bmi_normal:         'Normal Weight',
@@ -194,13 +204,15 @@ function applyLang() {
 
     const btn  = document.getElementById('langToggleBtn');
     const flag = document.getElementById('langFlag');
-    if (flag) {
-        flag.className = currentLang === 'th' ? 'fi fi-us' : 'fi fi-th';
-    }
+    if (flag) flag.className = currentLang === 'th' ? 'fi fi-us' : 'fi fi-th';
     if (btn) {
         const label = btn.childNodes[btn.childNodes.length - 1];
         if (label) label.textContent = currentLang === 'th' ? ' EN' : ' TH';
     }
+    const footerFlag  = document.getElementById('footerLangFlag');
+    const footerLabel = document.getElementById('footerLangLabel');
+    if (footerFlag)  footerFlag.className  = currentLang === 'th' ? 'fi fi-us' : 'fi fi-th';
+    if (footerLabel) footerLabel.textContent = currentLang === 'th' ? 'EN' : 'TH';
 
     document.documentElement.lang = currentLang === 'th' ? 'th' : 'en';
 }

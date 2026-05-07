@@ -38,6 +38,16 @@
         input[type="number"]:not(:placeholder-shown) + .cph,
         input[type="number"]:focus + .cph { display: none !important; }
         .field-wrap { position: relative; }
+        /* Unified input+unit wrapper: ส่ง error ไปที่ .unified-input ชั้นใน */
+        .field-wrap:has(.input-error) .unified-input {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 2px #fecaca !important;
+        }
+        .unified-input .input-error {
+            border-color: transparent !important;
+            box-shadow: none !important;
+            background-color: #fff5f5 !important;
+        }
 
         /* ── MOBILE LAYOUT ≤767px ─────────────────────── */
         @media (max-width: 767px) {

@@ -180,9 +180,14 @@ async function updateStats() {
             .select('*', { count: 'exact', head: true })
             .gte('created_at', today + 'T00:00:00.000Z');
 
+        const num = (n) => (n || 0).toLocaleString('th-TH');
         const totalEl = document.getElementById('statsTotal');
         const todayEl = document.getElementById('statsToday');
-        if (totalEl) totalEl.textContent = (total      || 0).toLocaleString('th-TH');
-        if (todayEl) todayEl.textContent = (todayCount || 0).toLocaleString('th-TH');
+        if (totalEl) totalEl.textContent = num(total);
+        if (todayEl) todayEl.textContent = num(todayCount);
+        const fTotalEl = document.getElementById('footerStatsTotal');
+        const fTodayEl = document.getElementById('footerStatsToday');
+        if (fTotalEl) fTotalEl.textContent = num(total);
+        if (fTodayEl) fTodayEl.textContent = num(todayCount);
     } catch(e) {}
 }
