@@ -5,36 +5,36 @@
 
 function hDose(w) {
     // Thai NTP ตาราง 5.1: ≥35 kg → 300 mg · <35 kg → คำนวณตาม H100
-    if (w < 25) return { mg:100, tab:'H100 × 1 เม็ด',   warn:false };
-    if (w < 35) return { mg:150, tab:'H100 × 1½ เม็ด',  warn:false };
-    return       { mg:300, tab:'H100 × 3 เม็ด',   warn:false };
+    if (w < 25) return { mg:100, tab:`H100 × 1 ${t('unit_tablet')}`,   warn:false };
+    if (w < 35) return { mg:150, tab:`H100 × 1½ ${t('unit_tablet')}`,  warn:false };
+    return       { mg:300, tab:`H100 × 3 ${t('unit_tablet')}`,   warn:false };
 }
 
 function rDose(w) {
     // R capsule หักไม่ได้ → ต้องใช้ขนาดเต็มแคป
     // 20-24 kg: R300 = 12.5–15 mg/kg → เกิน range 8–12 (แต่เลี่ยงไม่ได้)
-    if (w < 25)  return { mg:300, tab:'R300 × 1 แคป', warn:true,  warnMsg:'⚠️ ~12–15 mg/kg สูงกว่า range เพราะแคปหักไม่ได้' };
-    if (w < 35)  return { mg:300, tab:'R300 × 1 แคป', warn:false };
-    if (w <= 49) return { mg:450, tab:'R450 × 1 แคป', warn:false };
-    return        { mg:600, tab:'R300 × 2 แคป', warn:false };
+    if (w < 25)  return { mg:300, tab:`R300 × 1 ${t('unit_capsule')}`, warn:true,  warnMsg:t('warn_cap_unsplit') };
+    if (w < 35)  return { mg:300, tab:`R300 × 1 ${t('unit_capsule')}`, warn:false };
+    if (w <= 49) return { mg:450, tab:`R450 × 1 ${t('unit_capsule')}`, warn:false };
+    return        { mg:600, tab:`R300 × 2 ${t('unit_capsule')}`, warn:false };
 }
 
 function zDose(w) {
     // Thai NTP ตาราง 5.1: 35-49→1,000 · 50-69→1,500 · ≥70→2,000
-    if (w < 25)  return { mg:500,  tab:'Z500 × 1 เม็ด'  };
-    if (w < 35)  return { mg:750,  tab:'Z500 × 1½ เม็ด' };
-    if (w <= 49) return { mg:1000, tab:'Z500 × 2 เม็ด'  };
-    if (w <= 69) return { mg:1500, tab:'Z500 × 3 เม็ด'  };
-    return        { mg:2000, tab:'Z500 × 4 เม็ด'  };
+    if (w < 25)  return { mg:500,  tab:`Z500 × 1 ${t('unit_tablet')}`   };
+    if (w < 35)  return { mg:750,  tab:`Z500 × 1½ ${t('unit_tablet')}`  };
+    if (w <= 49) return { mg:1000, tab:`Z500 × 2 ${t('unit_tablet')}`   };
+    if (w <= 69) return { mg:1500, tab:`Z500 × 3 ${t('unit_tablet')}`   };
+    return        { mg:2000, tab:`Z500 × 4 ${t('unit_tablet')}`   };
 }
 
 function eDose(w) {
     // Thai NTP ตาราง 5.1: 35-49→800 · 50-69→1,000 · ≥70→1,200
-    if (w < 25)  return { mg:400,  tab:'E400 × 1 เม็ด'  };
-    if (w < 35)  return { mg:500,  tab:'E500 × 1 เม็ด'  };
-    if (w <= 49) return { mg:800,  tab:'E400 × 2 เม็ด'  };
-    if (w <= 69) return { mg:1000, tab:'E500 × 2 เม็ด'  };
-    return        { mg:1200, tab:'E400 × 3 เม็ด'  };
+    if (w < 25)  return { mg:400,  tab:`E400 × 1 ${t('unit_tablet')}`   };
+    if (w < 35)  return { mg:500,  tab:`E500 × 1 ${t('unit_tablet')}`   };
+    if (w <= 49) return { mg:800,  tab:`E400 × 2 ${t('unit_tablet')}`   };
+    if (w <= 69) return { mg:1000, tab:`E500 × 2 ${t('unit_tablet')}`   };
+    return        { mg:1200, tab:`E400 × 3 ${t('unit_tablet')}`   };
 }
 
 function sDose(w, ageOver65) {
@@ -67,21 +67,21 @@ function fmtRec(d, w) {
 
 // ─── Format: renal dose column ─────────────
 function fmtRenal(d, requiresAdj) {
-    if (!requiresAdj) return '<span class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</span>';
+    if (!requiresAdj) return `<span class="text-slate-400" style="font-size:14px">${t('renal_no_adj')}</span>`;
     const mgStr = d.mg.toLocaleString('th-TH') + ' mg';
     return `<div class="font-bold text-red-700 leading-tight" style="font-size:16px">${mgStr}</div>
             <div class="text-slate-500 leading-tight" style="font-size:12px">${d.tab}</div>
-            <div class="text-[11px] text-red-600 font-bold mt-0.5 leading-tight">3 ครั้ง/สัปดาห์<br>(จ.พ.ศ.)</div>`;
+            <div class="text-[11px] text-red-600 font-bold mt-0.5 leading-tight">${t('renal_3x_week')}<br>${t('renal_mwf')}</div>`;
 }
 
 // ════════════════════════════════════════════
 //  FDC — WHO Adult Bands (Rifinah-300 หักได้)
 // ════════════════════════════════════════════
 const fdcBands = [
-    { min:30, max:37,  label:'30–37 kg', rfr:'2 เม็ด', rf150:'2 เม็ด', rf300:'1 เม็ด' },
-    { min:38, max:54,  label:'38–54 kg', rfr:'3 เม็ด', rf150:'3 เม็ด', rf300:'1½ เม็ด' },
-    { min:55, max:70,  label:'55–70 kg', rfr:'4 เม็ด', rf150:'4 เม็ด', rf300:'2 เม็ด' },
-    { min:71, max:999, label:'&gt;70 kg', rfr:'5 เม็ด', rf150:'4 เม็ด', rf300:'2½ เม็ด' }
+    { min:30, max:37,  label:'30–37 kg',  rfr:'2',  rf150:'2',  rf300:'1'   },
+    { min:38, max:54,  label:'38–54 kg',  rfr:'3',  rf150:'3',  rf300:'1½'  },
+    { min:55, max:70,  label:'55–70 kg',  rfr:'4',  rf150:'4',  rf300:'2'   },
+    { min:71, max:999, label:'&gt;70 kg', rfr:'5',  rf150:'4',  rf300:'2½'  }
 ];
 
 // ════════════════════════════════════════════
@@ -178,11 +178,11 @@ function calcFdcReverse() {
         const mkgVal = (mgVal / w).toFixed(1);
         const v = parseFloat(mkgVal);
         let color, bg, warn;
-        if      (v < min * 0.9) { color='#b91c1c'; bg='#fee2e2'; warn='ต่ำมาก ↓'; }
-        else if (v < min)       { color='#d97706'; bg='#fef3c7'; warn='ค่อนข้างต่ำ ↓'; }
-        else if (v > max * 1.1) { color='#b91c1c'; bg='#fee2e2'; warn='สูงมาก ↑'; }
-        else if (v > max)       { color='#f97316'; bg='#fff7ed'; warn='ค่อนข้างสูง ↑'; }
-        else                    { color='#059669'; bg='#d1fae5'; warn='ปกติ ✓'; }
+        if      (v < min * 0.9) { color='#b91c1c'; bg='#fee2e2'; warn=t('fdc_rev_too_low'); }
+        else if (v < min)       { color='#d97706'; bg='#fef3c7'; warn=t('fdc_rev_sl_low'); }
+        else if (v > max * 1.1) { color='#b91c1c'; bg='#fee2e2'; warn=t('fdc_rev_too_high'); }
+        else if (v > max)       { color='#f97316'; bg='#fff7ed'; warn=t('fdc_rev_sl_high'); }
+        else                    { color='#059669'; bg='#d1fae5'; warn=t('fdc_rev_normal'); }
 
         el.innerHTML = `<span style="color:${color};font-weight:700">${mkgVal} mg/kg</span><br><span style="color:${color};font-size:9px">${warn}</span>`;
         box.style.borderColor = color;
@@ -196,7 +196,7 @@ function calcFdcReverse() {
         applyBoxStyle('fdcBoxE','fdcE_kgmg', eMg, 15, 20, eMg === 0);
     } else {
         ['fdcR_kgmg','fdcH_kgmg','fdcZ_kgmg','fdcE_kgmg'].forEach(id => {
-            document.getElementById(id).textContent = 'กรอกน้ำหนัก';
+            document.getElementById(id).textContent = t('fdc_enter_weight');
         });
     }
 }
@@ -205,11 +205,11 @@ function calcFdcReverse() {
 //  MG/KG ACTUAL — color for dose input column
 // ════════════════════════════════════════════
 function mgKgColor(val, min, max) {
-    if (val < min * 0.85) return { color:'#b91c1c', label:'ต่ำมาก' };
-    if (val < min)        return { color:'#d97706', label:'ต่ำเล็กน้อย' };
-    if (val > max * 1.15) return { color:'#b91c1c', label:'สูงมาก' };
-    if (val > max)        return { color:'#f97316', label:'สูงเล็กน้อย' };
-    return                       { color:'#059669', label:'ปกติ' };
+    if (val < min * 0.85) return { color:'#b91c1c', label:t('mgkg_too_low') };
+    if (val < min)        return { color:'#d97706', label:t('mgkg_slightly_low') };
+    if (val > max * 1.15) return { color:'#b91c1c', label:t('mgkg_too_high') };
+    if (val > max)        return { color:'#f97316', label:t('mgkg_slightly_high') };
+    return                       { color:'#059669', label:t('mgkg_normal') };
 }
 
 
@@ -899,7 +899,7 @@ function calculate() {
             mgKgRange:[4,6],
             calcRange:`${Math.round(w*4)} – ${Math.round(w*6)} mg`,
             ageWarn: ageOver65,
-            ageWarnMsg: 'เสี่ยง peripheral neuropathy และ hepatotoxicity สูงขึ้น แนะนำให้ Pyridoxine (B6) 25–50 mg/day ร่วมด้วย',
+            ageWarnMsg: t('age_warn_h'),
             rec: fmtRec(H, w), renal: fmtRenal(H, false)
         },
         {
@@ -907,7 +907,7 @@ function calculate() {
             mgKgRange:[8,12],
             calcRange:`${Math.round(w*8)} – ${Math.round(w*12)} mg`,
             ageWarn: ageOver65,
-            ageWarnMsg: 'เสี่ยง hyperbilirubinemia ติดตามอาการตัวเหลืองตาเหลือง',
+            ageWarnMsg: t('age_warn_r'),
             rec: fmtRec(R, w), renal: fmtRenal(R, false)
         },
         {
@@ -915,7 +915,7 @@ function calculate() {
             mgKgRange:[20,30],
             calcRange:`${Math.round(w*20)} – ${Math.round(w*30)} mg`,
             ageWarn: ageOver65,
-            ageWarnMsg: 'เสี่ยง hepatotoxicity สูงขึ้น ติดตาม LFT อย่างใกล้ชิด',
+            ageWarnMsg: t('age_warn_z'),
             rec: fmtRec(Z, w), renal: fmtRenal(Z, true)
         },
         {
@@ -923,7 +923,7 @@ function calculate() {
             mgKgRange:[15,20],
             calcRange:`${Math.round(w*15)} – ${Math.round(w*20)} mg`,
             ageWarn: ageOver65,
-            ageWarnMsg: 'เสี่ยง optic neuropathy สูงขึ้น ตรวจ visual acuity ก่อนและระหว่างการรักษา',
+            ageWarnMsg: t('age_warn_e'),
             rec: fmtRec(E, w), renal: fmtRenal(E, true)
         },
         {
@@ -931,7 +931,7 @@ function calculate() {
             mgKgRange:[12,18],
             calcRange:`${Math.round(sDW*12)} – ${Math.round(sDW*18)} mg`,
             ageWarn: ageOver65,
-            ageWarnMsg: 'เสี่ยง ototoxicity และ nephrotoxicity สูง พิจารณาลด dose ติดตามการได้ยินและไตใกล้ชิด',
+            ageWarnMsg: t('age_warn_s'),
             dwNote: allFilled && gender ? `คำนวณจาก ${sDWLabel} (${sDW.toFixed(1)} kg)` : '',
             rec: fmtRec(S, w), renal: fmtRenal(S, true)
         }
@@ -947,21 +947,21 @@ function calculate() {
         return `<div class="font-bold leading-tight" style="font-size:16px;color:${color}">${txt}</div>`;
     }
     function mdrRenal(txt, adj) {
-        if (!adj) return '<span class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</span>';
-        return `<div class="font-bold text-red-700" style="font-size:16px">${txt}</div><div class="text-[11px] text-red-600 font-bold">3 ครั้ง/สัปดาห์<br>(จ.พ.ศ.)</div>`;
+        if (!adj) return `<span class="text-slate-400" style="font-size:14px">${t('renal_no_adj')}</span>`;
+        return `<div class="font-bold text-red-700" style="font-size:16px">${txt}</div><div class="text-[11px] text-red-600 font-bold">${t('renal_3x_week')}<br>${t('renal_mwf')}</div>`;
     }
 
     const groupAB = [
         { name:'Levofloxacin (Lfx)',  sub:'750 mg fixed (Thai NTP 6.3 shorter)',  icon:'💊', renalAdj:true,  mgKgRange:[15,20], maxMg:1000,
           calcRange:`${Math.round(w*15)} – ${Math.round(w*20)} mg`,
           ageWarn: ageOver65,
-          ageWarnMsg: 'เสี่ยง QT prolongation และ tendon rupture สูงขึ้น ตรวจ ECG ก่อนใช้ ระวังการหกล้ม',
+          ageWarnMsg: t('age_warn_lfx'),
           rec:mdrRec('750 mg','#065f46'), renal:mdrRenal('750 mg', true) },
         { name:'Moxifloxacin (Mfx)',  sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:400,
           calcRange:'fixed-400', rec:mdrRec('400 mg','#065f46'), renal:mdrRenal('',false) },
         { name:'Bedaquiline (Bdq)',   sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:null,
           calcRange:'fixed-bdq',
-          rec:'<div class="font-bold leading-tight" style="font-size:16px;color:#065f46">400 mg QD × 14 วัน</div><div class="text-[9px] text-slate-500">จากนั้น 200 mg × 3×/wk × 22 wk</div>',
+          rec:`<div class="font-bold leading-tight" style="font-size:16px;color:#065f46">400 mg QD × ${t('bdq_14_days')}</div><div class="leading-tight" style="font-size:12px;color:#065f46">${t('bdq_then')} 200 mg × 3×/wk × 22 wk</div>`,
           renal:mdrRenal('',false) },
         { name:'Linezolid (Lzd)',     sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:600,
           calcRange:'fixed-600', rec:mdrRec('600 mg','#065f46'), renal:mdrRenal('',false) },
@@ -970,7 +970,7 @@ function calculate() {
         { name:'Cycloserine (Cs)',    sub:'10–15 mg/kg/day',                      icon:'💊', renalAdj:true,  mgKgRange:[10,15], maxMg:1000,
           calcRange:`${Math.round(w*10)} – ${Math.round(w*15)} mg`,
           rec:mdrRec(csRec,'#065f46'),
-          renal:'<div class="font-bold text-red-700 text-[10px]">250 mg QD</div><div class="text-[9px] text-red-600 font-bold">หรือ 500 mg 3×/สัปดาห์</div>' },
+          renal:`<div class="font-bold text-red-700 text-[10px]">250 mg QD</div><div class="text-[9px] text-red-600 font-bold">${t('cs_renal_alt')}</div>` },
         { name:'Terizidone (Trd)',    sub:'10–15 mg/kg/day (alt. Cs)',            icon:'💊', renalAdj:true,  mgKgRange:[10,15], maxMg:1000,
           calcRange:`${Math.round(w*10)} – ${Math.round(w*15)} mg`,
           rec:mdrRec(csRec,'#065f46'),
@@ -991,13 +991,13 @@ function calculate() {
         { name:'Amikacin (Am)',             sub:`15–20 mg/kg/day · max 1,000 mg`,  icon:'💉', renalAdj:true, renalThreshold:50, mgKgRange:[15,20], maxMg:1000,
           calcRange:amkCalc, rec:mdrRec(amkRec,'#164e63'),
           ageWarn: ageOver65,
-          ageWarnMsg: 'เสี่ยง ototoxicity และ nephrotoxicity สูงขึ้น ติดตาม TDM (ถ้า รพ. ทำได้)',
+          ageWarnMsg: t('age_warn_am'),
           dwNote: allFilled && gender ? `คำนวณจาก ${amkDWLabel} (${amkDW.toFixed(1)} kg)` : '',
-          renalMobileHint: '2–3 ครั้ง/สัปดาห์',
+          renalMobileHint: t('renal_2_3x_week'),
           renalFn: (crcl) => {
-            if (crcl === null) return '<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl &lt;50:<br>2–3 ครั้ง/สัปดาห์</div>';
-            if (crcl >= 50)   return '<span class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</span>';
-            return '<div class="font-bold text-red-700">15 mg/kg</div><div class="text-[11px] text-red-600 font-bold">2–3 ครั้ง/สัปดาห์</div>';
+            if (crcl === null) return `<div class="text-[11px] font-medium leading-tight" style="color:#c2410c">CrCl &lt;50:<br>${t('renal_2_3x_week')}</div>`;
+            if (crcl >= 50)   return `<span class="text-slate-400" style="font-size:14px">${t('renal_no_adj')}</span>`;
+            return `<div class="font-bold text-orange-700">15 mg/kg</div><div class="text-[11px] text-orange-600 font-bold">${t('renal_2_3x_week')}</div>`;
           }},
         { name:'Ethionamide/Pto',           sub:'15–20 mg/kg/day · Thai NTP 6.3',  icon:'💊', renalAdj:false, mgKgRange:[15,20], maxMg:1000,
           calcRange:`${Math.round(w*15)} – ${Math.round(w*20)} mg`,
@@ -1069,8 +1069,8 @@ function calculate() {
             // Mobile renal hint ใต้ rec dose
             const renalHintMobile = d.renalAdj
                 ? (rb
-                    ? `<div class="md:hidden mt-0.5 text-[9px] font-bold text-red-600">🔴 ${d.renalMobileHint || '3 ครั้ง/สัปดาห์ (จ.พ.ศ.)'}</div>`
-                    : `<div class="md:hidden mt-0.5 text-[9px] text-red-400">🔴 ต้องปรับ CrCl &lt;${renalThresh}</div>`)
+                    ? `<div class="md:hidden mt-0.5 text-[9px] font-bold text-red-600">🔴 ${d.renalMobileHint || t('renal_3x_mwf')}</div>`
+                    : `<div class="md:hidden mt-0.5 text-[9px] text-red-400">🔴 ${t('renal_adjust_if', renalThresh)}</div>`)
                 : '';
 
             // mg/kg cell
@@ -1081,7 +1081,7 @@ function calculate() {
                 const overMax = d.maxMg && doseVal > d.maxMg;
                 if (overMax) {
                     mgKgCell = `<td class="p-1 text-center border-b ${borderCls} bg-red-50">
-                        <div style="font-size:10px;font-weight:900;color:#b91c1c;white-space:nowrap">⛔ เกิน Max</div>
+                        <div style="font-size:10px;font-weight:900;color:#b91c1c;white-space:nowrap">${t('mgkg_exceeds_max')}</div>
                         <div style="font-size:10px;font-weight:700;color:#dc2626">${d.maxMg.toLocaleString()} mg</div>
                         <div style="font-size:9px;color:#dc2626">${mkgVal.toFixed(1)} <span style="font-size:8px">mg/kg</span></div>
                     </td>`;
@@ -1103,10 +1103,10 @@ function calculate() {
             // Max exceeded warning — แสดงเฉพาะตอนยังไม่กรอกโดสจริง
             const calcHigh = d.calcRange !== '-' ? parseFloat(d.calcRange.replace(/,/g,'').split('–')[1]) : 0;
             const maxNote     = (d.maxMg && calcHigh > d.maxMg && doseVal === 0)
-                ? `<div class="md:hidden text-[9px] font-bold text-orange-600 mt-0.5">⚠️ calc range เกิน max (${d.maxMg.toLocaleString()} mg)</div>`
+                ? `<div class="md:hidden text-[9px] font-bold text-orange-600 mt-0.5">${t('calc_range_exceeds', d.maxMg.toLocaleString())}</div>`
                 : '';
             const maxNoteDesktop = (d.maxMg && calcHigh > d.maxMg && doseVal === 0)
-                ? `<div class="hidden md:block text-[11px] font-bold text-orange-600 mt-0.5">⚠️ calc range เกิน max (${d.maxMg.toLocaleString()} mg)</div>`
+                ? `<div class="hidden md:block text-[11px] font-bold text-orange-600 mt-0.5">${t('calc_range_exceeds', d.maxMg.toLocaleString())}</div>`
                 : '';
 
             html += `
@@ -1116,7 +1116,7 @@ function calculate() {
                     <div class="text-[10px] opacity-70 mt-0.5">${subMgKg}</div>
                     ${subMax ? `<div class="text-[10px] opacity-70">${subMax}</div>` : ''}
                     ${d.dwNote ? `<div class="hidden md:block text-[10px] font-semibold text-blue-600 mt-0.5 bg-blue-50 border border-blue-200 rounded px-1 py-0.5">⚖️ ${d.dwNote}</div>` : ''}
-                    ${d.ageWarn ? `<div class="hidden md:block text-[10px] font-bold text-orange-600 mt-1 bg-orange-50 border border-orange-200 rounded px-1 py-0.5">⚠️ >65 ปี: ${d.ageWarnMsg}</div>` : ''}
+                    ${d.ageWarn ? `<div class="hidden md:block text-[10px] font-bold text-orange-600 mt-1 bg-orange-50 border border-orange-200 rounded px-1 py-0.5">⚠️ ${t('age_65_prefix')} ${d.ageWarnMsg}</div>` : ''}
                 </td>
                 <td class="p-1.5 text-center border-b ${borderCls} text-slate-500 hidden md:table-cell" style="font-size:14px">${
                     d.calcRange === '-' ? '<span class="text-slate-400 italic text-xs">Fixed Dose</span>' :
@@ -1135,7 +1135,7 @@ function calculate() {
                 </td>
                 <td class="p-1 border-b ${borderCls}" style="border-left:1px solid rgba(0,0,0,0.08)">
                     <input type="number" step="any" min="0"
-                        placeholder="กรอกโดสจริง (mg)"
+                        placeholder="${t('dose_placeholder')}"
                         value="${cached}"
                         style="width:100%;height:3rem;padding:0 8px;font-size:14px;border:1px solid #cbd5e1;border-radius:6px;text-align:center;outline:none;background:white"
                         oninput="doseCache['${d.name.replace(/'/g,"\\'")}'] = parseFloat(this.value)||0; updateMgKg(this, ${w}, '${d.name.replace(/'/g,"\\'")}', ${JSON.stringify(d.mgKgRange)})">
@@ -1147,8 +1147,8 @@ function calculate() {
                         : rb
                             ? d.renal
                             : d.renalAdj
-                                ? `<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl &lt;${renalThresh}:<br>ปรับเป็น 3 ครั้ง/สัปดาห์<br><span style="color:#fca5a5">(จ.พ.ศ.)</span></div>`
-                                : `<div class="text-slate-400" style="font-size:14px">ไม่ต้องปรับ</div>`
+                                ? `<div class="text-[11px] font-medium leading-tight" style="color:#ef4444">CrCl &lt;${renalThresh}:<br>${t('renal_3x_week')}<br><span style="color:#fca5a5">${t('renal_mwf')}</span></div>`
+                                : `<div class="text-slate-400" style="font-size:14px">${t('renal_no_adj')}</div>`
                     }
                 </td>
             </tr>`;
@@ -1171,7 +1171,7 @@ function calculate() {
         // หา maxMg จาก drug data — ดึงจาก data-max attribute ที่เราจะฝังใน td
         const maxMg = parseFloat(tr.getAttribute('data-max')) || 0;
         if (maxMg && dose > maxMg) {
-            mgKgTd.innerHTML = `<div style="font-size:10px;font-weight:900;color:#b91c1c;line-height:1.3">⛔ เกิน Max</div><div style="font-size:10px;font-weight:700;color:#dc2626">${maxMg.toLocaleString()} mg</div><div style="font-size:9px;color:#dc2626">${mkgVal.toFixed(1)} <span style="font-size:8px">mg/kg</span></div>`;
+            mgKgTd.innerHTML = `<div style="font-size:10px;font-weight:900;color:#b91c1c;line-height:1.3">${t('mgkg_exceeds_max')}</div><div style="font-size:10px;font-weight:700;color:#dc2626">${maxMg.toLocaleString()} mg</div><div style="font-size:9px;color:#dc2626">${mkgVal.toFixed(1)} <span style="font-size:8px">mg/kg</span></div>`;
             mgKgTd.style.background = '#fff1f2';
             return;
         }
@@ -1207,7 +1207,7 @@ function calculate() {
     let fdcHTML = '';
     if (w < 30) {
         fdcHTML = `<tr><td colspan="4" class="p-3 text-center text-xs text-red-700 font-semibold bg-red-50">
-            ❌ WHO ไม่แนะนำ FDC สำหรับน้ำหนัก &lt;30 kg — ใช้ยาเดี่ยวตามตาราง First-Line ด้านบน
+            ${t('fdc_no_fdc_lowwt')}
         </td></tr>`;
     } else {
         fdcBands.forEach(b => {
@@ -1219,17 +1219,17 @@ function calculate() {
             // Rifafour column: grey-out + strikethrough เมื่อ CrCl <30
             const rfrCell = renalWarn
                 ? `<td class="p-1.5 border-b border-teal-100 bg-red-50">
-                       <span class="line-through text-red-300">${b.rfr}</span><br>
-                       <span class="text-[9px] text-red-600 font-bold">❌ ห้ามใช้</span>
+                       <span class="line-through text-red-300">${b.rfr} ${t('unit_tablet')}</span><br>
+                       <span class="text-[9px] text-red-600 font-bold">${t('fdc_contraindicated')}</span>
                    </td>`
-                : `<td class="p-1.5 border-b border-teal-100">${b.rfr}</td>`;
+                : `<td class="p-1.5 border-b border-teal-100">${b.rfr} ${t('unit_tablet')}</td>`;
 
             fdcHTML += `
             <tr class="${rowCls} transition-colors">
                 <td class="p-1.5 border-b border-teal-100 text-left pl-2">${b.label}${cur ? ' ◀' : ''}</td>
                 ${rfrCell}
-                <td class="p-1.5 border-b border-teal-100">${b.rf150}</td>
-                <td class="p-1.5 border-b border-teal-100">${b.rf300}</td>
+                <td class="p-1.5 border-b border-teal-100">${b.rf150} ${t('unit_tablet')}</td>
+                <td class="p-1.5 border-b border-teal-100">${b.rf300} ${t('unit_tablet')}</td>
             </tr>`;
         });
     }

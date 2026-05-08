@@ -61,7 +61,7 @@ const TRANSLATIONS = {
         footer_disclaimer:  'โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ',
         footer_visitors:    'ผู้เข้าชม',
         footer_dev:         'พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ',
-        footer_version:     'Version 1.6.2 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569',
+        footer_version:     'Version 1.6.3 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight (ผอม)',
         bmi_normal:         'Normal Weight (ปกติ)',
@@ -73,6 +73,77 @@ const TRANSLATIONS = {
         bw_underweight:     'Underweight',
         bw_obese:           'Obese',
         bw_normal:          'Normal',
+        // ── Table headers ───────────────────────
+        tbl_tabs_caps:      '+ จำนวนเม็ด/แคป',
+        tbl_actual_dose:    'โดสจริง',
+        tbl_actual_mgkg:    'mg/kg จริง',
+        // ── Drug units ──────────────────────────
+        unit_tablet:        'เม็ด',
+        unit_capsule:       'แคป',
+        warn_cap_unsplit:   '⚠️ ~12–15 mg/kg สูงกว่า range เพราะแคปหักไม่ได้',
+        // ── Renal labels ────────────────────────
+        renal_no_adj:       'ไม่ต้องปรับ',
+        renal_3x_week:      '3 ครั้ง/สัปดาห์',
+        renal_2_3x_week:    '2–3 ครั้ง/สัปดาห์',
+        renal_mwf:          '(จ.พ.ศ.)',
+        renal_reduce_3x:    'ปรับเป็น 3 ครั้ง/สัปดาห์',
+        renal_3x_mwf:       '3 ครั้ง/สัปดาห์ (จ.พ.ศ.)',
+        renal_adjust_if:    (thresh) => `ต้องปรับ CrCl <${thresh}`,
+        // ── mg/kg labels ────────────────────────
+        mgkg_too_low:       'ต่ำมาก',
+        mgkg_slightly_low:  'ต่ำเล็กน้อย',
+        mgkg_too_high:      'สูงมาก',
+        mgkg_slightly_high: 'สูงเล็กน้อย',
+        mgkg_normal:        'ปกติ',
+        mgkg_exceeds_max:   '⛔ เกิน Max',
+        // ── Age warnings >65 ────────────────────
+        age_warn_h:         'เสี่ยง peripheral neuropathy และ hepatotoxicity สูงขึ้น แนะนำให้ Pyridoxine (B6) 25–50 mg/day ร่วมด้วย',
+        age_warn_r:         'เสี่ยง hyperbilirubinemia ติดตามอาการตัวเหลืองตาเหลือง',
+        age_warn_z:         'เสี่ยง hepatotoxicity สูงขึ้น ติดตาม LFT อย่างใกล้ชิด',
+        age_warn_e:         'เสี่ยง optic neuropathy สูงขึ้น ตรวจ visual acuity ก่อนและระหว่างการรักษา',
+        age_warn_s:         'เสี่ยง ototoxicity และ nephrotoxicity สูง พิจารณาลด dose ติดตามการได้ยินและไตใกล้ชิด',
+        age_warn_am:        'เสี่ยง ototoxicity และ nephrotoxicity สูงขึ้น ติดตาม TDM (ถ้า รพ. ทำได้)',
+        age_warn_lfx:       'เสี่ยง QT prolongation และ tendon rupture สูงขึ้น ตรวจ ECG ก่อนใช้ ระวังการหกล้ม',
+        age_65_prefix:      '>65 ปี:',
+        bdq_14_days:        '14 วัน',
+        bdq_then:           'จากนั้น',
+        cs_renal_alt:       'หรือ 500 mg 3 ครั้ง/สัปดาห์',
+        // ── Dose input ──────────────────────────
+        dose_placeholder:   'กรอกโดสจริง (mg)',
+        calc_range_exceeds: (mg) => `⚠️ calc range เกิน max (${mg} mg)`,
+        // ── FDC Table ────────────────────────────
+        tbl1_title:          '1. ยาต้านวัณโรคแนวที่ 1',
+        fdc_title:           '2. ยาเม็ดรวม (FDC)',
+        tbl3_title:          '3. ยาวัณโรคดื้อยา (MDR-TB)',
+        fdc_subtitle:        '*แถบสีเขียว = น้ำหนักปัจจุบัน*',
+        fdc_col_weight:      'น้ำหนัก',
+        fdc_splittable:      'หักได้',
+        fdc_low_banner:      '❌ น้ำหนัก <30 kg — WHO ไม่แนะนำให้ใช้ FDC ในผู้ใหญ่ที่น้ำหนักน้อยกว่า 30 kg ให้ใช้ยาเดี่ยวแทน',
+        fdc_no_fdc_lowwt:    '❌ WHO ไม่แนะนำ FDC สำหรับน้ำหนัก <30 kg — ใช้ยาเดี่ยวตามตาราง First-Line ด้านบน',
+        fdc_renal_title:     '🚨 CrCl <30 mL/min — ห้ามใช้ HRZE (Rifafour)',
+        fdc_renal_p1:        'Z และ E ต้องปรับเป็น <strong>3 ครั้ง/สัปดาห์</strong> แต่ Rifafour เป็น fixed combination แยก dose ไม่ได้ — ถ้ากิน Rifafour 3 ครั้ง/สัปดาห์ จะทำให้ H และ R ต่ำเกินไปด้วย',
+        fdc_renal_p2:        '✅ <strong>ให้แยกยาเดี่ยว:</strong> H + R กินทุกวัน · Z + E ปรับเป็น 3 ครั้ง/สัปดาห์ (ดูตารางยาเดี่ยวด้านบน)',
+        fdc_renal_p3:        '✅ <strong>Rifinah (HR) ยังใช้ได้ตามปกติ</strong> — ไม่มี Z และ E จึงไม่กระทบ',
+        fdc_contraindicated: '❌ ห้ามใช้',
+        fdc_reverse_title:   '🔁 คำนวณย้อนกลับ — กรอกจำนวนเม็ดที่ผู้ป่วยได้รับ',
+        fdc_reverse_hint:    'รับทศนิยมได้ เช่น 1.5, 2.5 เม็ด · กรอกได้เพียง 1 ชนิด FDC ต่อครั้ง (Rifafour หรือ Rifinah)',
+        fdc_reverse_note:    '* Z และ E มาจาก Rifafour เท่านั้น · Rifinah ให้เฉพาะ R และ H',
+        ph_fdc_tabs:         'เม็ด',
+        fdc_enter_weight:    'กรอกน้ำหนัก',
+        fdc_rev_too_low:     'ต่ำมาก ↓',
+        fdc_rev_sl_low:      'ค่อนข้างต่ำ ↓',
+        fdc_rev_too_high:    'สูงมาก ↑',
+        fdc_rev_sl_high:     'ค่อนข้างสูง ↑',
+        fdc_rev_normal:      'ปกติ ✓',
+        // ── Hepatotoxicity (DILI) ─────────────────
+        dili_title:          'เฝ้าระวัง Hepatotoxicity / Drug-Induced Liver Injury (DILI)',
+        dili_stop:           'หยุด H, R, Z ทันที เมื่อ ALT/AST:',
+        dili_sym_desc:       'มีอาการ (คลื่นไส้ อาเจียน อ่อนเพลีย ตาเหลือง)',
+        dili_asym_desc:      'ไม่มีอาการ',
+        dili_while:          'ระหว่างหยุด H,R,Z → ให้ E + Lfx/Mfx + S (หรือ Am) · ติดตาม LFT ทุกสัปดาห์',
+        dili_rechallenge:    'Rechallenge เมื่อ ALT &lt;2× ULN: RE + Lfx → 3–7 วัน → HRE (หยุด Lfx) · <span class="text-red-600 font-bold">ห้ามนำ Z กลับ</span>',
+        dili_no_z_regimen:   'หาก Z rechallenge ไม่ได้ → ต่อด้วย 2HRE/7HR (รวม 9 เดือน)',
+        dili_bili_note:      '* ภาวะ indirect bilirubin สูงเพียงอย่างเดียวจาก RIF (ไม่มี ALT ↑) — ไม่ต้องหยุดยา',
     },
     en: {
         // ── Header ──────────────────────────────
@@ -132,7 +203,7 @@ const TRANSLATIONS = {
         footer_disclaimer:  'This calculator is intended as a dosing reference only. Clinical decisions remain the responsibility of the treating clinician.',
         footer_visitors:    'Visitors',
         footer_dev:         'Developed by Sirawit Phaopha, Pharmacist · Prang Ku Hospital, Sisaket, Thailand',
-        footer_version:     'Version 1.6.2 · Released 8 May 2026',
+        footer_version:     'Version 1.6.3 · Released 8 May 2026',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight',
         bmi_normal:         'Normal Weight',
@@ -144,6 +215,77 @@ const TRANSLATIONS = {
         bw_underweight:     'Underweight',
         bw_obese:           'Obese',
         bw_normal:          'Normal',
+        // ── Table headers ───────────────────────
+        tbl_tabs_caps:      '+ tablets/capsules',
+        tbl_actual_dose:    'Actual Dose',
+        tbl_actual_mgkg:    'Actual mg/kg',
+        // ── Drug units ──────────────────────────
+        unit_tablet:        'tablet',
+        unit_capsule:       'capsule',
+        warn_cap_unsplit:   '⚠️ ~12–15 mg/kg above range (capsule unsplittable)',
+        // ── Renal labels ────────────────────────
+        renal_no_adj:       'No adjustment',
+        renal_3x_week:      '3 times/week',
+        renal_2_3x_week:    '2–3 times/week',
+        renal_mwf:          '(Mon/Wed/Fri)',
+        renal_reduce_3x:    'Reduce to 3 times/week',
+        renal_3x_mwf:       '3 times/week (Mon/Wed/Fri)',
+        renal_adjust_if:    (thresh) => `Adjust if CrCl <${thresh}`,
+        // ── mg/kg labels ────────────────────────
+        mgkg_too_low:       'Too low',
+        mgkg_slightly_low:  'Slightly low',
+        mgkg_too_high:      'Too high',
+        mgkg_slightly_high: 'Slightly high',
+        mgkg_normal:        'Normal',
+        mgkg_exceeds_max:   '⛔ Exceeds Max',
+        // ── Age warnings >65 ────────────────────
+        age_warn_h:         'Increased risk of peripheral neuropathy and hepatotoxicity — recommend Pyridoxine (B6) 25–50 mg/day',
+        age_warn_r:         'Increased risk of hyperbilirubinemia — monitor LFT and signs of jaundice',
+        age_warn_z:         'Increased risk of hepatotoxicity — monitor LFT closely',
+        age_warn_e:         'Increased risk of optic neuropathy — baseline and periodic visual acuity testing recommended',
+        age_warn_s:         'High risk of ototoxicity and nephrotoxicity — consider dose reduction; monitor audiometry and renal function',
+        age_warn_am:        'Increased risk of ototoxicity and nephrotoxicity — monitor TDM if available',
+        age_warn_lfx:       'Increased risk of QT prolongation and tendon rupture — ECG before use, fall precautions',
+        age_65_prefix:      '>65 yrs:',
+        bdq_14_days:        '14 days',
+        bdq_then:           'Then',
+        cs_renal_alt:       'or 500 mg 3 times/week',
+        // ── Dose input ──────────────────────────
+        dose_placeholder:   'Enter dose (mg)',
+        calc_range_exceeds: (mg) => `⚠️ calculated range exceeds maximum (${mg} mg)`,
+        // ── FDC Table ────────────────────────────
+        tbl1_title:          '1. First-Line Antituberculosis Drugs',
+        fdc_title:           '2. Fixed-Dose Combinations (FDC)',
+        tbl3_title:          '3. Drug-Resistant Tuberculosis (MDR-TB)',
+        fdc_subtitle:        '*Green row = current weight*',
+        fdc_col_weight:      'Weight',
+        fdc_splittable:      'splittable',
+        fdc_low_banner:      '❌ Weight <30 kg — WHO does not recommend FDC for adults below 30 kg; use individual drugs instead',
+        fdc_no_fdc_lowwt:    '❌ WHO does not recommend FDC for weight <30 kg — use individual drugs from the First-Line table above',
+        fdc_renal_title:     '🚨 CrCl <30 mL/min — Rifafour (HRZE) is contraindicated',
+        fdc_renal_p1:        'Z and E require dose reduction to <strong>3 times/week</strong>; however, Rifafour is a fixed combination and cannot be dose-separated — administering Rifafour 3 times/week would result in subtherapeutic H and R levels',
+        fdc_renal_p2:        '✅ <strong>Switch to individual drugs:</strong> H + R daily · Z + E 3 times/week (see First-Line table above)',
+        fdc_renal_p3:        '✅ <strong>Rifinah (HR) may be continued</strong> — contains no Z or E, therefore unaffected',
+        fdc_contraindicated: '❌ Contraindicated',
+        fdc_reverse_title:   '🔁 Reverse Calculator — Enter number of tablets dispensed',
+        fdc_reverse_hint:    'Accepts decimals e.g. 1.5, 2.5 tablets · Enter one FDC type at a time (Rifafour or Rifinah)',
+        fdc_reverse_note:    '* Z and E are derived from Rifafour only · Rifinah provides R and H only',
+        ph_fdc_tabs:         'tabs',
+        fdc_enter_weight:    'Enter weight',
+        fdc_rev_too_low:     'Too low ↓',
+        fdc_rev_sl_low:      'Slightly low ↓',
+        fdc_rev_too_high:    'Too high ↑',
+        fdc_rev_sl_high:     'Slightly high ↑',
+        fdc_rev_normal:      'Normal ✓',
+        // ── Hepatotoxicity (DILI) ─────────────────
+        dili_title:          'Monitor Hepatotoxicity / Drug-Induced Liver Injury (DILI)',
+        dili_stop:           'Discontinue H, R, Z immediately when ALT/AST:',
+        dili_sym_desc:       'symptoms (nausea, vomiting, fatigue, jaundice)',
+        dili_asym_desc:      'without symptoms',
+        dili_while:          'While withholding H,R,Z → give E + Lfx/Mfx + S (or Am) · Monitor LFT weekly',
+        dili_rechallenge:    'Rechallenge when ALT &lt;2× ULN: RE + Lfx → 3–7 days → HRE (stop Lfx) · <span class="text-red-600 font-bold">Do not reintroduce Z</span>',
+        dili_no_z_regimen:   'If Z cannot be reintroduced → complete 2HRE/7HR (9 months total)',
+        dili_bili_note:      '* Isolated indirect hyperbilirubinemia from RIF (no ALT elevation) — no need to discontinue',
     }
 };
 
@@ -200,6 +342,12 @@ function applyLang() {
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.dataset.i18nPlaceholder;
         if (t[key] !== undefined) el.placeholder = t[key];
+    });
+
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.dataset.i18nHtml;
+        const val = t[key];
+        if (val !== undefined) el.innerHTML = typeof val === 'function' ? val() : val;
     });
 
     const btn  = document.getElementById('langToggleBtn');

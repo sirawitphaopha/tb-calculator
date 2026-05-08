@@ -25,7 +25,7 @@
                 ·
                 <a href="https://www.who.int/publications/i/item/9789240107243" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','who_guidelines_2025')">WHO Guidelines 2025</a>
             </p>
-            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.2</span>
+            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.3</span>
             <span class="text-teal-200 text-[10px] md:text-[11px]">· <span data-i18n="stats_today_label">วันนี้</span> <span id="statsToday">-</span> · <span data-i18n="stats_total_label">รวม</span> <span id="statsTotal">-</span> <span data-i18n="stats_unit">ครั้ง</span></span>
             <div class="flex gap-1.5 shrink-0">
                 <button onclick="resetAll()"
@@ -227,19 +227,19 @@
         <!-- 1. First-Line -->
         <div>
             <div class="flex flex-wrap items-baseline gap-2 mb-1.5 border-b-2 border-teal-500 pb-0.5">
-                <h2 class="text-base font-bold text-teal-800">1. ยาวัณโรคแนวที่ 1</h2>
+                <h2 data-i18n="tbl1_title" class="text-base font-bold text-teal-800">1. ยาต้านวัณโรคแนวที่ 1</h2>
                 <span class="text-[10px] text-teal-600">Thai NTP 2021 ตาราง 5.1 · H100 · R300/450 แคป · Z500 · E400/500</span>
             </div>
             <div id="lowWeightBanner" class="hidden mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold border bg-orange-50 border-orange-300 text-orange-800"></div>
             <div class="bg-white border border-teal-200 rounded-lg overflow-x-auto shadow-sm">
                 <table class="w-full text-center text-sm">
-                    <thead class="bg-teal-600 text-white text-xs">
+                    <thead class="bg-teal-600 text-white text-[15px]">
                         <tr>
                             <th class="p-2 w-[20%] text-center">Drug</th>
                             <th class="p-2 w-[14%] text-center hidden md:table-cell">Calculated Range</th>
-                            <th class="p-2 w-[22%] text-center">Recommended Dose<br><span class="text-[9px] font-normal text-teal-200">+ จำนวนเม็ด/แคป</span></th>
-                            <th class="p-2 w-[16%] text-center border-l border-teal-500">โดสจริง <span class="font-normal text-teal-200">(mg)</span></th>
-                            <th class="p-2 w-[12%] text-center">mg/kg จริง</th>
+                            <th class="p-2 w-[22%] text-center">Recommended Dose<br><span data-i18n="tbl_tabs_caps" class="text-[11px] font-normal text-teal-200">+ จำนวนเม็ด/แคป</span></th>
+                            <th class="p-2 w-[16%] text-center border-l border-teal-500"><span data-i18n="tbl_actual_dose">โดสจริง</span> <span class="font-normal text-teal-200">(mg)</span></th>
+                            <th class="p-2 w-[12%] text-center" data-i18n="tbl_actual_mgkg">mg/kg จริง</th>
                             <th class="p-2 w-[16%] text-center border-l border-teal-500 hidden md:table-cell">Renal Dose</th>
                         </tr>
                     </thead>
@@ -252,26 +252,26 @@
         <!-- 2. FDC -->
         <div>
             <div class="flex flex-wrap items-baseline gap-2 mb-1.5 border-b-2 border-teal-500 pb-0.5">
-                <h2 class="text-sm font-bold text-teal-800">2. ยาเม็ดรวม (FDC)</h2>
-                <span class="text-[10px] text-teal-600">WHO Adult Bands · *แถบสีเขียว = น้ำหนักปัจจุบัน*</span>
+                <h2 data-i18n="fdc_title" class="text-sm font-bold text-teal-800">2. ยาเม็ดรวม (FDC)</h2>
+                <span data-i18n="fdc_subtitle" class="text-[10px] text-teal-600">WHO Adult Bands · *แถบสีเขียว = น้ำหนักปัจจุบัน*</span>
             </div>
-            <div id="fdcLowBanner" class="hidden mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold border bg-red-50 border-red-300 text-red-800">
+            <div id="fdcLowBanner" data-i18n="fdc_low_banner" class="hidden mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold border bg-red-50 border-red-300 text-red-800">
                 ❌ น้ำหนัก &lt;30 kg — WHO ไม่แนะนำให้ใช้ FDC ในผู้ใหญ่ที่น้ำหนักน้อยกว่า 30 kg ให้ใช้ยาเดี่ยวแทน
             </div>
             <div id="fdcRenalBanner" class="hidden mb-2 px-3 py-2 rounded-lg text-xs border bg-red-50 border-red-400 text-red-800">
-                <p class="font-bold mb-0.5">🚨 CrCl &lt;30 mL/min — ห้ามใช้ HRZE (Rifafour)</p>
-                <p class="font-normal text-red-700 leading-relaxed">
-                    Z และ E ต้องปรับเป็น <strong>3×/สัปดาห์</strong> แต่ Rifafour เป็น fixed combination แยก dose ไม่ได้
-                    — ถ้ากิน Rifafour 3×/wk จะทำให้ H และ R ต่ำเกินไปด้วย
+                <p data-i18n="fdc_renal_title" class="font-bold mb-0.5">🚨 CrCl &lt;30 mL/min — ห้ามใช้ HRZE (Rifafour)</p>
+                <p data-i18n-html="fdc_renal_p1" class="font-normal text-red-700 leading-relaxed">
+                    Z และ E ต้องปรับเป็น <strong>3 ครั้ง/สัปดาห์</strong> แต่ Rifafour เป็น fixed combination แยก dose ไม่ได้
+                    — ถ้ากิน Rifafour 3 ครั้ง/สัปดาห์ จะทำให้ H และ R ต่ำเกินไปด้วย
                 </p>
-                <p class="font-normal text-red-700 mt-0.5">✅ <strong>ให้แยกยาเดี่ยว:</strong> H + R กินทุกวัน · Z + E ปรับเป็น 3×/สัปดาห์ (ดูตารางยาเดี่ยวด้านบน)</p>
-                <p class="font-normal text-emerald-700 mt-0.5">✅ <strong>Rifinah (HR) ยังใช้ได้ตามปกติ</strong> — ไม่มี Z และ E จึงไม่กระทบ</p>
+                <p data-i18n-html="fdc_renal_p2" class="font-normal text-red-700 mt-0.5">✅ <strong>ให้แยกยาเดี่ยว:</strong> H + R กินทุกวัน · Z + E ปรับเป็น 3 ครั้ง/สัปดาห์ (ดูตารางยาเดี่ยวด้านบน)</p>
+                <p data-i18n-html="fdc_renal_p3" class="font-normal text-emerald-700 mt-0.5">✅ <strong>Rifinah (HR) ยังใช้ได้ตามปกติ</strong> — ไม่มี Z และ E จึงไม่กระทบ</p>
             </div>
             <div class="bg-white border border-teal-200 rounded-lg overflow-x-auto">
                 <table class="w-full text-center text-xs">
                     <thead class="bg-teal-100 text-teal-800">
                         <tr>
-                            <th class="p-1.5 font-semibold border-b-2 border-teal-200 text-left pl-2">น้ำหนัก</th>
+                            <th data-i18n="fdc_col_weight" class="p-1.5 font-semibold border-b-2 border-teal-200 text-left pl-2">น้ำหนัก</th>
                             <th id="rfrHeader" class="p-1.5 font-semibold border-b-2 border-teal-200">
                                 HRZE — Rifafour e-275<br>
                                 <span class="text-[9px] font-normal">(R150/H75/Z400/E275 mg)</span>
@@ -282,7 +282,7 @@
                             </th>
                             <th class="p-1.5 font-semibold border-b-2 border-teal-200">
                                 HR — Rifinah-300<br>
-                                <span class="text-[9px] font-normal">(R300/H150 mg · หักได้)</span>
+                                <span class="text-[9px] font-normal">(R300/H150 mg · <span data-i18n="fdc_splittable">หักได้</span>)</span>
                             </th>
                         </tr>
                     </thead>
@@ -292,52 +292,52 @@
 
             <!-- FDC Reverse Calculator -->
             <div class="mt-2 bg-teal-50 border border-teal-200 rounded-lg p-2.5">
-                <p class="text-xs font-bold text-teal-800 mb-0.5">🔁 คำนวณย้อนกลับ — กรอกจำนวนเม็ดที่ผู้ป่วยได้รับ</p>
-                <p class="text-[10px] text-slate-400 mb-2">รับทศนิยมได้ เช่น 1.5, 2.5 เม็ด · กรอกได้เพียง 1 ชนิด FDC ต่อครั้ง (Rifafour หรือ Rifinah)</p>
+                <p data-i18n="fdc_reverse_title" class="text-[13px] font-bold text-teal-800 mb-0.5">🔁 คำนวณย้อนกลับ — กรอกจำนวนเม็ดที่ผู้ป่วยได้รับ</p>
+                <p data-i18n="fdc_reverse_hint" class="text-[10px] mb-2">รับทศนิยมได้ เช่น 1.5, 2.5 เม็ด · กรอกได้เพียง 1 ชนิด FDC ต่อครั้ง (Rifafour หรือ Rifinah)</p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
                     <div class="flex items-center gap-1.5">
                         <label class="text-[11px] font-semibold text-teal-700 whitespace-nowrap">Rifafour (HRZE):</label>
-                        <input type="number" id="rifafourTabs" step="0.5" min="0" max="10" placeholder="เม็ด"
-                            class="w-16 h-7 px-1 text-sm border border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
+                        <input type="number" id="rifafourTabs" step="0.5" min="0" max="10" placeholder="เม็ด" data-i18n-placeholder="ph_fdc_tabs"
+                            class="w-16 h-7 px-1 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
                             oninput="lockFdc('rifafour'); calcFdcReverse()">
                     </div>
                     <div class="flex items-center gap-1.5">
                         <label class="text-[11px] font-semibold text-teal-700 whitespace-nowrap">Rifinah-150 (HR):</label>
-                        <input type="number" id="rifinah150Tabs" step="0.5" min="0" max="10" placeholder="เม็ด"
-                            class="w-16 h-7 px-1 text-sm border border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
+                        <input type="number" id="rifinah150Tabs" step="0.5" min="0" max="10" placeholder="เม็ด" data-i18n-placeholder="ph_fdc_tabs"
+                            class="w-16 h-7 px-1 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
                             oninput="lockFdc('rifinah150'); calcFdcReverse()">
                     </div>
                     <div class="flex items-center gap-1.5">
                         <label class="text-[11px] font-semibold text-teal-700 whitespace-nowrap">Rifinah-300 (HR):</label>
-                        <input type="number" id="rifinah300Tabs" step="0.5" min="0" max="10" placeholder="เม็ด"
-                            class="w-16 h-7 px-1 text-sm border border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
+                        <input type="number" id="rifinah300Tabs" step="0.5" min="0" max="10" placeholder="เม็ด" data-i18n-placeholder="ph_fdc_tabs"
+                            class="w-16 h-7 px-1 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
                             oninput="lockFdc('rifinah300'); calcFdcReverse()">
                     </div>
                 </div>
                 <div id="fdcReverseResult" class="hidden">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
-                        <div id="fdcBoxR" class="bg-white border border-teal-200 rounded p-2">
-                            <p class="text-[10px] text-slate-500 font-semibold">Rifampicin (R)</p>
-                            <p id="fdcR_mg" class="text-base font-black text-teal-700">--- mg</p>
-                            <p id="fdcR_kgmg" class="text-[10px] text-slate-500">--- mg/kg</p>
-                        </div>
                         <div id="fdcBoxH" class="bg-white border border-teal-200 rounded p-2">
-                            <p class="text-[10px] text-slate-500 font-semibold">Isoniazid (H)</p>
+                            <p class="text-[14px] text-slate-500 font-semibold">Isoniazid (H)</p>
                             <p id="fdcH_mg" class="text-base font-black text-teal-700">--- mg</p>
                             <p id="fdcH_kgmg" class="text-[10px] text-slate-500">--- mg/kg</p>
                         </div>
+                        <div id="fdcBoxR" class="bg-white border border-teal-200 rounded p-2">
+                            <p class="text-[14px] text-slate-500 font-semibold">Rifampicin (R)</p>
+                            <p id="fdcR_mg" class="text-base font-black text-teal-700">--- mg</p>
+                            <p id="fdcR_kgmg" class="text-[10px] text-slate-500">--- mg/kg</p>
+                        </div>
                         <div id="fdcBoxZ" class="bg-white border border-teal-200 rounded p-2">
-                            <p class="text-[10px] text-slate-500 font-semibold">Pyrazinamide (Z)</p>
+                            <p class="text-[14px] text-slate-500 font-semibold">Pyrazinamide (Z)</p>
                             <p id="fdcZ_mg" class="text-base font-black text-teal-700">--- mg</p>
                             <p id="fdcZ_kgmg" class="text-[10px] text-slate-500">--- mg/kg</p>
                         </div>
                         <div id="fdcBoxE" class="bg-white border border-teal-200 rounded p-2">
-                            <p class="text-[10px] text-slate-500 font-semibold">Ethambutol (E)</p>
+                            <p class="text-[14px] text-slate-500 font-semibold">Ethambutol (E)</p>
                             <p id="fdcE_mg" class="text-base font-black text-teal-700">--- mg</p>
                             <p id="fdcE_kgmg" class="text-[10px] text-slate-500">--- mg/kg</p>
                         </div>
                     </div>
-                    <p class="text-[9px] text-slate-400 mt-1">* Z และ E มาจาก Rifafour เท่านั้น · Rifinah ให้เฉพาะ R และ H</p>
+                    <p data-i18n="fdc_reverse_note" class="text-[10px] mt-1">* Z และ E มาจาก Rifafour เท่านั้น · Rifinah ให้เฉพาะ R และ H</p>
                 </div>
             </div>
         </div>
@@ -345,21 +345,21 @@
         <!-- 3. MDR-TB -->
         <div>
             <div class="flex flex-wrap items-baseline gap-2 mb-1.5 border-b-2 border-teal-500 pb-0.5">
-                <h2 class="text-base font-bold text-teal-800">3. ยาวัณโรคดื้อยา (MDR-TB)</h2>
+                <h2 class="text-base font-bold text-teal-800" data-i18n="tbl3_title">3. ยาวัณโรคดื้อยา (MDR-TB)</h2>
                 <span class="text-[10px] text-teal-600">Thai NTP 2021 ตาราง 6.3 (Shorter Regimen)</span>
             </div>
             <div class="grid grid-cols-1 gap-3">
                 <div class="bg-white border border-emerald-200 rounded-lg overflow-x-auto shadow-sm">
                     <h3 class="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-1">Group A &amp; B</h3>
                     <table class="w-full text-center text-xs">
-                        <thead class="bg-emerald-600 text-white">
+                        <thead class="bg-emerald-600 text-white text-[15px]">
                             <tr>
-                                <th class="p-1.5 w-[22%] text-center">Drug</th>
-                                <th class="p-1.5 w-[14%] text-center hidden md:table-cell">Calculated Range</th>
-                                <th class="p-1.5 w-[20%] text-center">Recommended Dose</th>
-                                <th class="p-1.5 w-[16%] text-center border-l border-emerald-400">โดสจริง <span class="font-normal">(mg)</span></th>
-                                <th class="p-1.5 w-[12%] text-center">mg/kg</th>
-                                <th class="p-1.5 w-[16%] text-center border-l border-emerald-500 hidden md:table-cell">Renal Dose</th>
+                                <th class="p-2 w-[22%] text-center">Drug</th>
+                                <th class="p-2 w-[14%] text-center hidden md:table-cell">Calculated Range</th>
+                                <th class="p-2 w-[20%] text-center">Recommended Dose</th>
+                                <th class="p-2 w-[16%] text-center border-l border-emerald-400"><span data-i18n="tbl_actual_dose">โดสจริง</span> <span class="font-normal">(mg)</span></th>
+                                <th class="p-2 w-[12%] text-center">mg/kg</th>
+                                <th class="p-2 w-[16%] text-center border-l border-emerald-500 hidden md:table-cell">Renal Dose</th>
                             </tr>
                         </thead>
                         <tbody id="groupABody" class="divide-y divide-emerald-100"></tbody>
@@ -368,14 +368,14 @@
                 <div class="bg-white border border-cyan-200 rounded-lg overflow-x-auto shadow-sm">
                     <h3 class="text-[11px] font-bold text-cyan-700 bg-cyan-100 px-2 py-1">Group C &amp; Injectables</h3>
                     <table class="w-full text-center text-xs">
-                        <thead class="bg-cyan-600 text-white">
+                        <thead class="bg-cyan-600 text-white text-[15px]">
                             <tr>
-                                <th class="p-1.5 w-[22%] text-center">Drug</th>
-                                <th class="p-1.5 w-[14%] text-center hidden md:table-cell">Calculated Range</th>
-                                <th class="p-1.5 w-[20%] text-center">Recommended Dose</th>
-                                <th class="p-1.5 w-[16%] text-center border-l border-cyan-400">โดสจริง <span class="font-normal">(mg)</span></th>
-                                <th class="p-1.5 w-[12%] text-center">mg/kg</th>
-                                <th class="p-1.5 text-center border-l border-cyan-500 hidden md:table-cell">Renal Dose</th>
+                                <th class="p-2 w-[22%] text-center">Drug</th>
+                                <th class="p-2 w-[14%] text-center hidden md:table-cell">Calculated Range</th>
+                                <th class="p-2 w-[20%] text-center">Recommended Dose</th>
+                                <th class="p-2 w-[16%] text-center border-l border-cyan-400"><span data-i18n="tbl_actual_dose">โดสจริง</span> <span class="font-normal">(mg)</span></th>
+                                <th class="p-2 w-[12%] text-center">mg/kg</th>
+                                <th class="p-2 text-center border-l border-cyan-500 hidden md:table-cell">Renal Dose</th>
                             </tr>
                         </thead>
                         <tbody id="groupCBody" class="divide-y divide-cyan-100"></tbody>
@@ -387,16 +387,19 @@
         <!-- Hepatotoxicity -->
         <div class="bg-slate-50 border border-slate-300 rounded-lg p-3 shadow-sm">
             <h3 class="text-xs font-bold text-slate-800 mb-1.5 flex items-center border-b border-slate-200 pb-1">
-                <span class="mr-2">🩺</span> เฝ้าระวัง Hepatotoxicity (DILI)
+                <span class="mr-2">🩺</span><span data-i18n="dili_title">เฝ้าระวัง Hepatotoxicity / Drug-Induced Liver Injury (DILI)</span>
             </h3>
             <div class="text-slate-700 text-[11px] space-y-0.5 font-medium">
-                <p>หยุด H, R, Z ทันที เมื่อ ALT/AST:</p>
+                <p data-i18n="dili_stop">หยุด H, R, Z ทันที เมื่อ ALT/AST:</p>
                 <ul class="list-disc list-inside ml-2">
-                    <li><span class="text-red-700 font-bold">Symptomatic:</span> &gt;3× ULN + มีอาการ (คลื่นไส้ อาเจียน อ่อนเพลีย ตาเหลือง)</li>
-                    <li><span class="text-red-700 font-bold">Asymptomatic:</span> &gt;5× ULN ไม่มีอาการ</li>
-                    <li>Bilirubin &gt;2 mg/dL</li>
+                    <li><span class="text-red-700 font-bold">Symptomatic:</span> &gt;3× ULN + <span data-i18n="dili_sym_desc">มีอาการ (คลื่นไส้ อาเจียน อ่อนเพลีย ตาเหลือง)</span></li>
+                    <li><span class="text-red-700 font-bold">Asymptomatic:</span> &gt;5× ULN <span data-i18n="dili_asym_desc">ไม่มีอาการ</span></li>
+                    <li>Total Bilirubin &gt;2 mg/dL</li>
                 </ul>
-                <p class="text-[9px] text-slate-500 mt-1">ระหว่างหยุด H,R,Z → ให้ E + Lfx/Mfx + Injectable ≥3 ชนิด · Rechallenge เมื่อ ALT &lt;2× ULN</p>
+                <p class="text-[10px] text-slate-400 italic mt-0.5 ml-2" data-i18n="dili_bili_note">* ภาวะ indirect bilirubin สูงเพียงอย่างเดียวจาก RIF (ไม่มี ALT ↑) — ไม่ต้องหยุดยา</p>
+                <p class="text-[11px] text-slate-600 mt-1" data-i18n="dili_while">ระหว่างหยุด H,R,Z → ให้ E + Lfx/Mfx + S (หรือ Am) · ติดตาม LFT ทุกสัปดาห์</p>
+                <p class="text-[11px] text-slate-600 mt-0.5" data-i18n-html="dili_rechallenge">Rechallenge เมื่อ ALT &lt;2× ULN: RE + Lfx → 3–7 วัน → HRE (หยุด Lfx) · <span class="text-red-600 font-bold">ห้ามนำ Z กลับ</span></p>
+                <p class="text-[11px] text-slate-600 mt-0.5" data-i18n="dili_no_z_regimen">หาก Z rechallenge ไม่ได้ → ต่อด้วย 2HRE/7HR (รวม 9 เดือน)</p>
             </div>
         </div>
 
@@ -431,7 +434,7 @@
         <div class="text-center text-[11px] text-slate-400 pt-2 pb-1 border-t border-slate-100 mt-2 space-y-0.5">
             <div class="text-slate-500 italic px-4"><span class="text-red-500 not-italic">* </span><span data-i18n="footer_disclaimer">โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ</span></div>
             <div class="text-slate-600 font-semibold" data-i18n="footer_dev">พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ</div>
-            <div class="text-slate-600 font-semibold" data-i18n="footer_version">Version 1.6.2 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569</div>
+            <div class="text-slate-600 font-semibold" data-i18n="footer_version">Version 1.6.3 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569</div>
             <div>
                 👥 <span data-i18n="footer_visitors">ผู้เข้าชม</span>:
                 <span data-i18n="stats_today_label">วันนี้</span> <span id="footerStatsToday">-</span> ·
