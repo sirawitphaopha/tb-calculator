@@ -6,6 +6,7 @@ const TRANSLATIONS = {
     th: {
         // ── Header ──────────────────────────────
         title:              'Tuberculosis Dose Calculator · สำหรับผู้ใหญ่อายุ >15 ปี',
+        title_mobile:       'Tuberculosis Dose Calculator · สำหรับอายุ >15 ปี',
         subtitle_ref:       'ข้อมูลอ้างอิง:',
         stats_today_label:  'วันนี้',
         stats_total_label:  'รวม',
@@ -35,6 +36,8 @@ const TRANSLATIONS = {
         crcl_underweight_warn:  '⚠️ มวลกล้ามเนื้อน้อย ค่า CrCl อาจสูงกว่าความเป็นจริง',
         crcl_renal_low:         '🚨 <strong>CrCl &lt;30</strong> — ปรับ 3 ครั้ง/สัปดาห์',
         crcl_renal_ok:          '✅ CrCl ≥30 — ไม่ต้องปรับขนาดยา',
+        crcl_no_height:         '⚠ กรอกส่วนสูงเพื่อความแม่นยำ',
+        crcl_enter_height:      'กรอกส่วนสูง',
         egfr_hint:              'กรุณากรอก เพศ อายุ และ Cr',
         bmi_hint:               'กรอกน้ำหนัก + ส่วนสูง',
         scr_low:                (ref) => `⚠️ Serum Creatinine ต่ำกว่าปกติ (ref ${ref}) — ค่า CrCl อาจสูงกว่าความเป็นจริง เนื่องจากการผลิต creatinine ลดลง`,
@@ -61,7 +64,7 @@ const TRANSLATIONS = {
         footer_disclaimer:  'โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ',
         footer_visitors:    'ผู้เข้าชม',
         footer_dev:         'พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ',
-        footer_version:     'Version 1.6.3 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569',
+        footer_version:     'Version 1.6.4 · เผยแพร่ 11 พฤษภาคม พ.ศ. 2569',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight (ผอม)',
         bmi_normal:         'Normal Weight (ปกติ)',
@@ -148,6 +151,7 @@ const TRANSLATIONS = {
     en: {
         // ── Header ──────────────────────────────
         title:              'Tuberculosis Dose Calculator · For adults >15 years',
+        title_mobile:       'Tuberculosis Dose Calculator · For age >15 years',
         subtitle_ref:       'References:',
         stats_today_label:  'Today',
         stats_total_label:  'Total',
@@ -177,6 +181,8 @@ const TRANSLATIONS = {
         crcl_underweight_warn:  '⚠️ Low muscle mass — CrCl may be overestimated',
         crcl_renal_low:         '🚨 <strong>CrCl &lt;30</strong> — Dose 3×/week',
         crcl_renal_ok:          '✅ CrCl ≥30 — No renal dose adjustment',
+        crcl_no_height:         '⚠ Enter height for accuracy',
+        crcl_enter_height:      'Enter height',
         egfr_hint:              'Enter sex, age, and Cr',
         bmi_hint:               'Enter weight and height',
         scr_low:                (ref) => `⚠️ Serum Cr below normal range (ref ${ref}) — CrCl may be overestimated due to reduced creatinine production`,
@@ -203,7 +209,7 @@ const TRANSLATIONS = {
         footer_disclaimer:  'This calculator is intended as a dosing reference only. Clinical decisions remain the responsibility of the treating clinician.',
         footer_visitors:    'Visitors',
         footer_dev:         'Developed by Sirawit Phaopha, Pharmacist · Prang Ku Hospital, Sisaket, Thailand',
-        footer_version:     'Version 1.6.3 · Released 8 May 2026',
+        footer_version:     'Version 1.6.4 · Released 11 May 2026',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight',
         bmi_normal:         'Normal Weight',
@@ -333,6 +339,7 @@ function toggleLang() {
 // ─── ใส่ข้อความตามภาษาที่เลือก ────────────
 function applyLang() {
     const t = TRANSLATIONS[currentLang];
+    document.body.classList.toggle('lang-en', currentLang === 'en');
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.dataset.i18n;

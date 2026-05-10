@@ -182,7 +182,10 @@
             #renalWarning { font-size: 10px; }
 
             /* Header smaller */
-            #mainTitle    { font-size: 1rem; }
+            #mainTitle             { font-size: 17px; }
+            .lang-en #mainTitle    { font-size: 16px; }
+            .drug-name-small       { font-size: 12.5px !important; }
+            .drug-name-sm          { font-size: 12px !important; }
             #mainSubtitle { font-size: 10px; }
 
             /* Section headings */
@@ -208,6 +211,8 @@
         }
         /* Desktop: ซ่อน mobile bottom zone, แสดง inline value */
         @media (min-width: 768px) {
+            .drug-name { font-size: 17px !important; }
+            .tbl-heading { font-size: 18px !important; }
             #crclBottomZone { display: none !important; }
             #crclValueInline { display: flex !important; }
             #crclRow2 { display: none !important; }

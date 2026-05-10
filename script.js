@@ -98,6 +98,8 @@ function calcCrCl(bw, age, scr, gender) {
 const doseCache = {};
 const _validationErrorCache = {};  // field → last tracked invalid value
 const _validationErrorTimer = {};  // field → debounce timer
+const _suppressValidation   = new Set();  // fields currently in typing grace period
+const _inputDebounceTimers  = {};         // field → 500ms debounce timer
 let scrUnit    = 'mgdl'; // 'mgdl' | 'umol'
 let weightUnit = 'kg';  // 'kg'   | 'lb'
 let heightUnit = 'cm';  // 'cm'   | 'inch'
@@ -226,6 +228,13 @@ function validateField(id) {
     const lim  = LIMITS[id];
     const wrap = el.closest('.field-wrap');
     if (wrap) { const old = wrap.querySelector('.tooltip-error'); if (old) old.remove(); }
+    if (_suppressValidation.has(id)) {
+        el.classList.remove('input-error');
+        el.style.borderColor = '';
+        el.style.backgroundColor = '';
+        if (id === 'age') { const aw = document.getElementById('ageWarnInline'); if (aw) aw.style.visibility = 'hidden'; }
+        return !el.value || isNaN(val) ? true : (val >= lim.min && val <= lim.max);
+    }
     if (!el.value || isNaN(val)) {
         el.classList.remove('input-error');
         el.style.borderColor = '';
@@ -292,6 +301,11 @@ function validateWeight(val) {
     const lim    = LIMITS.weight;
     const old    = document.getElementById('weightTooltip');
     if (old) old.remove();
+    if (_suppressValidation.has('weight')) {
+        el.classList.remove('input-error');
+        slider.style.opacity = '1';
+        return !val || isNaN(val) ? true : (val >= lim.min && val <= lim.max);
+    }
     if (!val || isNaN(val)) { el.classList.remove('input-error'); slider.style.opacity='1'; return true; }
     const msg = val < lim.min ? t(lim.minKey) : val > lim.max ? t(lim.maxKey) : null;
     if (msg) {
@@ -314,6 +328,16 @@ function validateWeight(val) {
     delete _validationErrorCache.weight;
     el.classList.remove('input-error'); slider.style.opacity='1';
     return true;
+}
+
+function onFieldInput(id) {
+    _suppressValidation.add(id);
+    clearTimeout(_inputDebounceTimers[id]);
+    calculate();
+    _inputDebounceTimers[id] = setTimeout(() => {
+        _suppressValidation.delete(id);
+        calculate();
+    }, 500);
 }
 
 // BUG FIX: init lockFdc state on page load (in case browser autofill)
@@ -545,10 +569,11 @@ function syncWeight(src) {
     if (src === 'input') {
         const kg = weightUnit === 'lb' ? parseFloat(n.value) / 2.20462 : parseFloat(n.value);
         if (!isNaN(kg)) s.value = Math.min(200, Math.max(20, kg));
+        onFieldInput('weight');
     } else {
         n.value = weightUnit === 'lb' ? Math.round(parseFloat(s.value) * 2.20462) : s.value;
+        calculate();
     }
-    calculate();
 }
 
 // ════════════════════════════════════════════
@@ -703,7 +728,9 @@ function calculate() {
         return { dw: Math.min(adjBw, 100), label: 'Adjusted BW' };
     }
     let finalCrcl = null;
-    const allFilled = w > 0 && Number.isFinite(h_cm) && ageValid && Number.isFinite(scr) && (gender === 'male' || gender === 'female');
+    const crclReady   = w > 0 && ageValid && Number.isFinite(scr) && (gender === 'male' || gender === 'female');
+    const heightFilled = Number.isFinite(h_cm);
+    const allFilled   = crclReady && heightFilled;
 
     const recBox  = document.getElementById('recCrclBox');
     const recText = document.getElementById('recCrclText');
@@ -720,6 +747,10 @@ function calculate() {
         numSpan.style.color = '#ef4444';
         warnEl.classList.add('hidden');
         icon.classList.add('hidden');
+        const bwBase = 'bw-box px-2 py-1 border border-slate-200 rounded text-center bg-white opacity-60 w-[95px] flex flex-col justify-center';
+        ['boxABW','boxIBW','boxAdjBW'].forEach(id => document.getElementById(id).className = bwBase);
+        ['crclABW','crclIBW','crclAdjBW'].forEach(id => document.getElementById(id).textContent = '---');
+        ['txtIBW','txtAdjBW'].forEach(id => document.getElementById(id).textContent = '-');
         ['firstLineBody','fdcBody','groupABody','groupCBody'].forEach(id => document.getElementById(id).innerHTML = '');
         document.getElementById('lowWeightBanner').classList.add('hidden');
         document.getElementById('fdcLowBanner').classList.add('hidden');
@@ -824,6 +855,55 @@ function calculate() {
             recBox.className = 'flex-1 min-w-0 bg-emerald-100 px-3 py-1.5 rounded flex items-center justify-between border border-emerald-300';
             icon.textContent = '🩺';
         }
+    } else if (crclReady) {
+        // มีข้อมูลครบ ยกเว้นส่วนสูง → คำนวณ CrCl จาก ABW อย่างเดียว
+        const cA = calcCrCl(w, age, scr, gender);
+        finalCrcl = cA;
+
+        const base = 'bw-box px-2 py-1 border border-slate-200 rounded text-center bg-white opacity-60 w-[95px] flex flex-col justify-center';
+        const hi   = 'bw-box px-2 py-1 border-2 border-emerald-500 rounded text-center bg-emerald-50 shadow-md w-[95px] flex flex-col justify-center';
+        ['boxABW','boxIBW','boxAdjBW'].forEach(id => document.getElementById(id).className = base);
+        document.getElementById('boxABW').className = hi;
+        document.getElementById('txtIBW').textContent   = '—';
+        document.getElementById('txtAdjBW').textContent = '—';
+        document.getElementById('crclABW').textContent  = `CrCl ${cA.toFixed(1)}`;
+        document.getElementById('crclIBW').innerHTML    = `<span style="font-size:10px;color:#b45309;font-weight:600">${t('crcl_enter_height')}</span>`;
+        document.getElementById('crclAdjBW').innerHTML  = `<span style="font-size:10px;color:#b45309;font-weight:600">${t('crcl_enter_height')}</span>`;
+
+        recBox.className = 'flex-1 min-w-0 bg-amber-50 px-3 py-1.5 rounded flex items-center justify-between border border-amber-300';
+        recText.innerHTML = `<span class="text-amber-700">Actual BW (${w.toFixed(1)} kg)</span>`;
+        numSpan.textContent = cA.toFixed(1);
+        const numSpanM2 = document.getElementById('crclNumberMobile');
+        if (numSpanM2) numSpanM2.textContent = cA.toFixed(1);
+        icon.classList.remove('hidden');
+
+        const mLSpan2  = document.querySelector('#recCrclValue > span:last-child');
+        const crclRow2b = document.getElementById('crclRow2');
+        const crclVI2  = document.getElementById('crclValueInline');
+        if (mLSpan2)   mLSpan2.style.display   = 'none';
+        if (crclRow2b) crclRow2b.style.display  = 'flex';
+        if (crclVI2)   crclVI2.style.alignItems = 'flex-start';
+
+        const renalIcon2b = document.getElementById('renalIcon');
+        const bz2 = document.getElementById('crclBottomZone');
+        if (cA < 30) {
+            numSpan.style.color = '#dc2626';
+            if (numSpanM2) numSpanM2.style.color = '#dc2626';
+            if (renalIcon2b) { renalIcon2b.textContent = '🚨'; renalIcon2b.classList.remove('hidden'); renalIcon2b.style.display = 'inline'; }
+            if (bz2) { bz2.style.background='#fff1f2'; bz2.style.borderColor='#fca5a5'; }
+            icon.textContent = '🚨';
+        } else {
+            numSpan.style.color = '#059669';
+            if (numSpanM2) numSpanM2.style.color = '#059669';
+            if (renalIcon2b) { renalIcon2b.textContent = '🩺'; renalIcon2b.classList.remove('hidden'); renalIcon2b.style.display = 'inline'; }
+            if (bz2) { bz2.style.background='#f0fdf4'; bz2.style.borderColor='#bbf7d0'; }
+            icon.textContent = '🩺';
+        }
+
+        warnEl.innerHTML  = t('crcl_no_height');
+        warnEl.className  = 'text-[10px] mt-0.5 font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-300 w-fit';
+        warnEl.classList.remove('hidden');
+
     } else {
         ['txtIBW','txtAdjBW'].forEach(id => document.getElementById(id).textContent = '-');
         ['crclABW','crclIBW','crclAdjBW'].forEach(id => document.getElementById(id).textContent = '---');
@@ -880,7 +960,7 @@ function calculate() {
     // คำนวณ IBW/AdjBW สำหรับ aminoglycoside dosing
     const hIn_drug   = h_cm / 2.54;
     const over60_drug = Math.max(0, hIn_drug - 60);
-    const ibw_drug   = (allFilled && gender) ? (gender === 'male' ? 50 + 2.3*over60_drug : 45.5 + 2.3*over60_drug) : null;
+    const ibw_drug   = (heightFilled && gender) ? (gender === 'male' ? 50 + 2.3*over60_drug : 45.5 + 2.3*over60_drug) : null;
     const adjBw_drug = ibw_drug ? ibw_drug + 0.4*(w - ibw_drug) : null;
     const short_drug  = h_cm < 152;
     const aminoDose  = (ibw_drug && !short_drug) ? aminoDW(w, ibw_drug, adjBw_drug, short_drug) : { dw: w, label: 'Actual BW' };
@@ -952,14 +1032,14 @@ function calculate() {
     }
 
     const groupAB = [
-        { name:'Levofloxacin (Lfx)',  sub:'750 mg fixed (Thai NTP 6.3 shorter)',  icon:'💊', renalAdj:true,  mgKgRange:[15,20], maxMg:1000,
+        { name:'Levofloxacin (Lfx)',  sub:'750 mg fixed (Thai NTP 6.3 shorter)',  icon:'💊', renalAdj:true,  mgKgRange:[15,20], maxMg:1000, smallName:true,
           calcRange:`${Math.round(w*15)} – ${Math.round(w*20)} mg`,
           ageWarn: ageOver65,
           ageWarnMsg: t('age_warn_lfx'),
           rec:mdrRec('750 mg','#065f46'), renal:mdrRenal('750 mg', true) },
-        { name:'Moxifloxacin (Mfx)',  sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:400,
+        { name:'Moxifloxacin (Mfx)',  sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:400, smallName:'sm',
           calcRange:'fixed-400', rec:mdrRec('400 mg','#065f46'), renal:mdrRenal('',false) },
-        { name:'Bedaquiline (Bdq)',   sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:null,
+        { name:'Bedaquiline (Bdq)',   sub:'',                                     icon:'💊', renalAdj:false, mgKgRange:null, maxMg:null, smallName:true,
           calcRange:'fixed-bdq',
           rec:`<div class="font-bold leading-tight" style="font-size:16px;color:#065f46">400 mg QD × ${t('bdq_14_days')}</div><div class="leading-tight" style="font-size:12px;color:#065f46">${t('bdq_then')} 200 mg × 3×/wk × 22 wk</div>`,
           renal:mdrRenal('',false) },
@@ -1112,7 +1192,7 @@ function calculate() {
             html += `
             <tr class="${hoverCls} transition-colors" data-max="${d.maxMg || 0}" ${rowBg}>
                 <td class="p-1.5 font-medium ${textCls} border-b ${borderCls} text-left">
-                    <div style="font-size:13px;font-weight:600;word-break:keep-all">${d.icon}&nbsp;${d.name.replace(' (', '\u00A0(')}</div>
+                    <div class="drug-name ${d.smallName === 'sm' ? 'drug-name-sm' : d.smallName ? 'drug-name-small' : ''}" style="font-size:13px;font-weight:600;word-break:keep-all">${d.icon}&nbsp;${d.name.replace(' (', '\u00A0(')}</div>
                     <div class="text-[10px] opacity-70 mt-0.5">${subMgKg}</div>
                     ${subMax ? `<div class="text-[10px] opacity-70">${subMax}</div>` : ''}
                     ${d.dwNote ? `<div class="hidden md:block text-[10px] font-semibold text-blue-600 mt-0.5 bg-blue-50 border border-blue-200 rounded px-1 py-0.5">⚖️ ${d.dwNote}</div>` : ''}
@@ -1134,10 +1214,11 @@ function calculate() {
                     ${renalHintMobile}
                 </td>
                 <td class="p-1 border-b ${borderCls}" style="border-left:1px solid rgba(0,0,0,0.08)">
-                    <input type="number" step="any" min="0"
+                    <input type="number" step="any" min="0" inputmode="decimal"
                         placeholder="${t('dose_placeholder')}"
                         value="${cached}"
                         style="width:100%;height:3rem;padding:0 8px;font-size:14px;border:1px solid #cbd5e1;border-radius:6px;text-align:center;outline:none;background:white"
+                        onfocus="this.select()"
                         oninput="doseCache['${d.name.replace(/'/g,"\\'")}'] = parseFloat(this.value)||0; updateMgKg(this, ${w}, '${d.name.replace(/'/g,"\\'")}', ${JSON.stringify(d.mgKgRange)})">
                 </td>
                 ${mgKgCell}

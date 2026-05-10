@@ -16,8 +16,11 @@
 <div id="appContainer" class="max-w-6xl mx-auto bg-white rounded-xl shadow-xl border border-teal-100">
 
     <!-- Header -->
-    <div class="bg-gradient-to-r from-teal-700 to-cyan-600 px-2.5 py-1.5 text-white text-center">
-        <h1 id="mainTitle" data-i18n="title" class="font-bold text-[13px] md:text-2xl whitespace-nowrap overflow-hidden text-ellipsis">Tuberculosis Dose Calculator · สำหรับผู้ใหญ่อายุ >15 ปี</h1>
+    <div class="bg-gradient-to-b from-[#005858] to-[#008080] px-2.5 py-1.5 text-white text-center">
+        <h1 id="mainTitle" class="font-bold text-[25px] md:text-[34px] whitespace-nowrap overflow-hidden text-ellipsis">
+            <span class="md:hidden" data-i18n="title_mobile">Tuberculosis Dose Calculator · สำหรับอายุ >15 ปี</span>
+            <span class="hidden md:inline" data-i18n="title">Tuberculosis Dose Calculator · สำหรับผู้ใหญ่อายุ >15 ปี</span>
+        </h1>
         <div class="flex items-center justify-center gap-2 mt-0.5 flex-wrap">
             <p id="mainSubtitle" class="text-teal-100 text-[11px] md:text-xs">
                 <span data-i18n="subtitle_ref">ข้อมูลอ้างอิง:</span>
@@ -25,7 +28,7 @@
                 ·
                 <a href="https://www.who.int/publications/i/item/9789240107243" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','who_guidelines_2025')">WHO Guidelines 2025</a>
             </p>
-            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.3</span>
+            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.4</span>
             <span class="text-teal-200 text-[10px] md:text-[11px]">· <span data-i18n="stats_today_label">วันนี้</span> <span id="statsToday">-</span> · <span data-i18n="stats_total_label">รวม</span> <span id="statsTotal">-</span> <span data-i18n="stats_unit">ครั้ง</span></span>
             <div class="flex gap-1.5 shrink-0">
                 <button onclick="resetAll()"
@@ -56,8 +59,9 @@
                     <div class="flex items-center gap-2">
                         <div class="unified-input flex h-8 md:h-10 rounded-lg border-2 border-teal-300 overflow-hidden focus-within:ring-2 focus-within:ring-teal-500 shrink-0">
                             <input type="number" id="weight" value="50" min="20" max="200"
+                                inputmode="decimal"
                                 class="w-14 md:w-20 px-1 text-base md:text-lg font-bold text-teal-900 bg-white text-center outline-none"
-                                oninput="syncWeight('input')">
+                                onfocus="this.select()" oninput="syncWeight('input')">
                             <button onclick="toggleWeightUnit()" id="weightUnitBtn"
                                 class="shrink-0 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-l-2 border-teal-300 hover:bg-teal-100 transition-colors whitespace-nowrap">
                                 kg ⇄
@@ -92,8 +96,9 @@
                         <label class="block text-teal-900 font-semibold text-[11px] mb-0.5">Serum Creatinine (<span id="scrUnitLabel">mg/dL</span>)</label>
                         <div class="field-wrap">
                             <div class="unified-input flex h-9 rounded-lg border-2 border-teal-300 overflow-hidden focus-within:ring-2 focus-within:ring-cyan-500">
-                                <input type="number" id="scr" step="0.01" min="0.1" max="30" oninput="calculate()"
-                                    class="flex-1 px-2 text-sm bg-white outline-none" placeholder="เช่น 1.0" data-i18n-placeholder="ph_scr">
+                                <input type="number" id="scr" step="0.01" min="0.1" max="30" inputmode="decimal"
+                                    class="flex-1 px-2 text-sm bg-white outline-none" placeholder="เช่น 1.0" data-i18n-placeholder="ph_scr"
+                                    onfocus="this.select()" oninput="onFieldInput('scr')">
                                 <button onclick="toggleScrUnit()" id="scrUnitBtn"
                                     class="shrink-0 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-l-2 border-teal-300 hover:bg-teal-100 transition-colors whitespace-nowrap">
                                     mg/dL ⇄
@@ -106,8 +111,9 @@
                         <label class="block text-teal-900 font-semibold text-[11px] mb-0.5"><span data-i18n="lbl_height">ส่วนสูง</span> (<span id="heightUnitLabel">cm</span>)</label>
                         <div class="field-wrap">
                             <div class="unified-input flex h-9 rounded-lg border-2 border-teal-300 overflow-hidden focus-within:ring-2 focus-within:ring-cyan-500">
-                                <input type="number" id="height" min="100" max="230" oninput="calculate()"
-                                    class="flex-1 px-2 text-sm bg-white outline-none" placeholder="เช่น 165" data-i18n-placeholder="ph_height">
+                                <input type="number" id="height" min="100" max="230" inputmode="decimal"
+                                    class="flex-1 px-2 text-sm bg-white outline-none" placeholder="เช่น 165" data-i18n-placeholder="ph_height"
+                                    onfocus="this.select()" oninput="onFieldInput('height')">
                                 <button onclick="toggleHeightUnit()" id="heightUnitBtn"
                                     class="shrink-0 px-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 border-l-2 border-teal-300 hover:bg-teal-100 transition-colors whitespace-nowrap">
                                     cm ⇄
@@ -119,8 +125,9 @@
                     <div id="fieldAge">
                         <label data-i18n="lbl_age" class="block text-teal-900 font-semibold text-[11px] mb-0.5">อายุ (ปี)</label>
                         <div class="field-wrap">
-                            <input type="number" id="age" min="1" max="120" oninput="calculate()"
-                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 45" data-i18n-placeholder="ph_age">
+                            <input type="number" id="age" min="1" max="120" inputmode="decimal"
+                                class="w-full h-9 px-2 text-sm border-2 border-teal-300 rounded-lg focus:ring-2 focus:ring-cyan-500 outline-none bg-white" placeholder="เช่น 45" data-i18n-placeholder="ph_age"
+                                onfocus="this.select()" oninput="onFieldInput('age')">
                         </div>
                         <div id="ageWarnInline" style="height:20px;visibility:hidden;display:flex;align-items:flex-end;padding-bottom:1px">
                             <span data-i18n="warn_crcl_age" class="inline-flex items-center text-[9px] font-bold text-orange-600 border border-orange-300 bg-orange-50 rounded px-1.5 py-0.5">⚠ CrCl อาจไม่แม่นยำ</span>
@@ -227,7 +234,7 @@
         <!-- 1. First-Line -->
         <div>
             <div class="flex flex-wrap items-baseline gap-2 mb-1.5 border-b-2 border-teal-500 pb-0.5">
-                <h2 data-i18n="tbl1_title" class="text-base font-bold text-teal-800">1. ยาต้านวัณโรคแนวที่ 1</h2>
+                <h2 data-i18n="tbl1_title" class="tbl-heading text-base font-bold text-teal-800">1. ยาต้านวัณโรคแนวที่ 1</h2>
                 <span class="text-[10px] text-teal-600">Thai NTP 2021 ตาราง 5.1 · H100 · R300/450 แคป · Z500 · E400/500</span>
             </div>
             <div id="lowWeightBanner" class="hidden mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold border bg-orange-50 border-orange-300 text-orange-800"></div>
@@ -252,7 +259,7 @@
         <!-- 2. FDC -->
         <div>
             <div class="flex flex-wrap items-baseline gap-2 mb-1.5 border-b-2 border-teal-500 pb-0.5">
-                <h2 data-i18n="fdc_title" class="text-sm font-bold text-teal-800">2. ยาเม็ดรวม (FDC)</h2>
+                <h2 data-i18n="fdc_title" class="tbl-heading text-sm font-bold text-teal-800">2. ยาเม็ดรวม (FDC)</h2>
                 <span data-i18n="fdc_subtitle" class="text-[10px] text-teal-600">WHO Adult Bands · *แถบสีเขียว = น้ำหนักปัจจุบัน*</span>
             </div>
             <div id="fdcLowBanner" data-i18n="fdc_low_banner" class="hidden mb-2 px-3 py-1.5 rounded-lg text-xs font-semibold border bg-red-50 border-red-300 text-red-800">
@@ -298,20 +305,23 @@
                     <div class="flex items-center gap-1.5">
                         <label class="text-[11px] font-semibold text-teal-700 whitespace-nowrap">Rifafour (HRZE):</label>
                         <input type="number" id="rifafourTabs" step="0.5" min="0" max="10" placeholder="เม็ด" data-i18n-placeholder="ph_fdc_tabs"
+                            inputmode="decimal"
                             class="w-16 h-7 px-1 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
-                            oninput="lockFdc('rifafour'); calcFdcReverse()">
+                            onfocus="this.select()" oninput="lockFdc('rifafour'); calcFdcReverse()">
                     </div>
                     <div class="flex items-center gap-1.5">
                         <label class="text-[11px] font-semibold text-teal-700 whitespace-nowrap">Rifinah-150 (HR):</label>
                         <input type="number" id="rifinah150Tabs" step="0.5" min="0" max="10" placeholder="เม็ด" data-i18n-placeholder="ph_fdc_tabs"
+                            inputmode="decimal"
                             class="w-16 h-7 px-1 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
-                            oninput="lockFdc('rifinah150'); calcFdcReverse()">
+                            onfocus="this.select()" oninput="lockFdc('rifinah150'); calcFdcReverse()">
                     </div>
                     <div class="flex items-center gap-1.5">
                         <label class="text-[11px] font-semibold text-teal-700 whitespace-nowrap">Rifinah-300 (HR):</label>
                         <input type="number" id="rifinah300Tabs" step="0.5" min="0" max="10" placeholder="เม็ด" data-i18n-placeholder="ph_fdc_tabs"
+                            inputmode="decimal"
                             class="w-16 h-7 px-1 text-sm border-2 border-teal-300 rounded focus:ring-2 focus:ring-teal-400 outline-none bg-white text-center"
-                            oninput="lockFdc('rifinah300'); calcFdcReverse()">
+                            onfocus="this.select()" oninput="lockFdc('rifinah300'); calcFdcReverse()">
                     </div>
                 </div>
                 <div id="fdcReverseResult" class="hidden">
@@ -345,7 +355,7 @@
         <!-- 3. MDR-TB -->
         <div>
             <div class="flex flex-wrap items-baseline gap-2 mb-1.5 border-b-2 border-teal-500 pb-0.5">
-                <h2 class="text-base font-bold text-teal-800" data-i18n="tbl3_title">3. ยาวัณโรคดื้อยา (MDR-TB)</h2>
+                <h2 class="tbl-heading text-base font-bold text-teal-800" data-i18n="tbl3_title">3. ยาวัณโรคดื้อยา (MDR-TB)</h2>
                 <span class="text-[10px] text-teal-600">Thai NTP 2021 ตาราง 6.3 (Shorter Regimen)</span>
             </div>
             <div class="grid grid-cols-1 gap-3">
@@ -434,7 +444,7 @@
         <div class="text-center text-[11px] text-slate-400 pt-2 pb-1 border-t border-slate-100 mt-2 space-y-0.5">
             <div class="text-slate-500 italic px-4"><span class="text-red-500 not-italic">* </span><span data-i18n="footer_disclaimer">โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ</span></div>
             <div class="text-slate-600 font-semibold" data-i18n="footer_dev">พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ</div>
-            <div class="text-slate-600 font-semibold" data-i18n="footer_version">Version 1.6.3 · เผยแพร่ 8 พฤษภาคม พ.ศ. 2569</div>
+            <div class="text-slate-600 font-semibold" data-i18n="footer_version">Version 1.6.4 · เผยแพร่ 11 พฤษภาคม พ.ศ. 2569</div>
             <div>
                 👥 <span data-i18n="footer_visitors">ผู้เข้าชม</span>:
                 <span data-i18n="stats_today_label">วันนี้</span> <span id="footerStatsToday">-</span> ·
