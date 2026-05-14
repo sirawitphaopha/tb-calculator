@@ -7,6 +7,10 @@ function hDose(w) {
     // Thai NTP ตาราง 5.1: ≥35 kg → 300 mg · <35 kg → คำนวณตาม H100
     if (w < 25) return { mg:100, tab:`H100 × 1 ${t('unit_tablet')}`,   warn:false };
     if (w < 35) return { mg:150, tab:`H100 × 1½ ${t('unit_tablet')}`,  warn:false };
+    if (w <= 49) return {
+        mg:300, tab:`H100 × 3 ${t('unit_tablet')}`, warn:false,
+        altMg:200, altTab:`H100 × 2 ${t('unit_tablet')}`
+    };
     return       { mg:300, tab:`H100 × 3 ${t('unit_tablet')}`,   warn:false };
 }
 
@@ -15,6 +19,10 @@ function rDose(w) {
     // 20-24 kg: R300 = 12.5–15 mg/kg → เกิน range 8–12 (แต่เลี่ยงไม่ได้)
     if (w < 25)  return { mg:300, tab:`R300 × 1 ${t('unit_capsule')}`, warn:true,  warnMsg:t('warn_cap_unsplit') };
     if (w < 35)  return { mg:300, tab:`R300 × 1 ${t('unit_capsule')}`, warn:false };
+    if (w <= 37) return {
+        mg:450, tab:`R450 × 1 ${t('unit_capsule')}`, warn:false,
+        altMg:300, altTab:`R300 × 1 ${t('unit_capsule')}`
+    };
     if (w <= 49) return { mg:450, tab:`R450 × 1 ${t('unit_capsule')}`, warn:false };
     return        { mg:600, tab:`R300 × 2 ${t('unit_capsule')}`, warn:false };
 }
@@ -23,6 +31,10 @@ function zDose(w) {
     // Thai NTP ตาราง 5.1: 35-49→1,000 · 50-69→1,500 · ≥70→2,000
     if (w < 25)  return { mg:500,  tab:`Z500 × 1 ${t('unit_tablet')}`   };
     if (w < 35)  return { mg:750,  tab:`Z500 × 1½ ${t('unit_tablet')}`  };
+    if (w <= 37) return {
+        mg:1000, tab:`Z500 × 2 ${t('unit_tablet')}`,
+        altMg:750, altTab:`Z500 × 1½ ${t('unit_tablet')}`
+    };
     if (w <= 49) return { mg:1000, tab:`Z500 × 2 ${t('unit_tablet')}`   };
     if (w <= 69) return { mg:1500, tab:`Z500 × 3 ${t('unit_tablet')}`   };
     return        { mg:2000, tab:`Z500 × 4 ${t('unit_tablet')}`   };
@@ -31,7 +43,12 @@ function zDose(w) {
 function eDose(w) {
     // Thai NTP ตาราง 5.1: 35-49→800 · 50-69→1,000 · ≥70→1,200
     if (w < 25)  return { mg:400,  tab:`E400 × 1 ${t('unit_tablet')}`   };
-    if (w < 35)  return { mg:500,  tab:`E500 × 1 ${t('unit_tablet')}`   };
+    if (w < 34)  return { mg:500,  tab:`E500 × 1 ${t('unit_tablet')}`   };
+    if (w < 35)  return { mg:600,  tab:`E400 × 1½ ${t('unit_tablet')}` };
+    if (w <= 40) return {
+        mg:800,  tab:`E400 × 2 ${t('unit_tablet')}`,
+        altMg:600, altTab:`E400 × 1½ ${t('unit_tablet')}`
+    };
     if (w <= 49) return { mg:800,  tab:`E400 × 2 ${t('unit_tablet')}`   };
     if (w <= 69) return { mg:1000, tab:`E500 × 2 ${t('unit_tablet')}`   };
     return        { mg:1200, tab:`E400 × 3 ${t('unit_tablet')}`   };
@@ -54,8 +71,16 @@ function sDose(w, ageOver65) {
 function fmtRec(d, w) {
     const mgStr = d.mg.toLocaleString('th-TH') + ' mg';
     const col   = d.warn ? 'text-orange-600' : 'text-teal-900';
-    let html    = `<div class="font-bold leading-tight ${col}" style="font-size:16px">${mgStr}</div>`;
-    html       += `<div class="text-slate-500 leading-tight" style="font-size:12px">${d.tab}</div>`;
+    let html    = '';
+    if (d.altMg !== undefined) {
+        const altMgStr = d.altMg.toLocaleString('th-TH') + ' mg';
+        const orWord = t('word_or');
+        html += `<div class="font-bold leading-tight ${col}" style="font-size:16px">${altMgStr} ${orWord} ${mgStr} <span class="font-normal text-slate-400" style="font-size:10px">(Std)</span></div>`;
+        html += `<div class="text-slate-500 leading-tight" style="font-size:12px">${d.altTab} ${orWord} ${d.tab} <span class="text-slate-400" style="font-size:10px">(Std)</span></div>`;
+    } else {
+        html += `<div class="font-bold leading-tight ${col}" style="font-size:16px">${mgStr}</div>`;
+        html += `<div class="text-slate-500 leading-tight" style="font-size:12px">${d.tab}</div>`;
+    }
     if (w < 35) {
         html += `<div class="text-[9px] text-slate-400">(${(d.mg/w).toFixed(1)} mg/kg)</div>`;
     }
@@ -347,6 +372,36 @@ window.addEventListener('load', () => {
 });
 
 // ════════════════════════════════════════════
+//  MOBILE INPUT UX: scroll-into-view + blur-on-scroll
+// ════════════════════════════════════════════
+if (window.innerWidth < 768) {
+    // Option 2: เมื่อกดที่ช่อง input ให้ scroll มาอยู่กลางจอ
+    document.addEventListener('focusin', (e) => {
+        if (e.target.matches('input, select, textarea')) {
+            setTimeout(() => {
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        }
+    });
+
+    // Option 1: เมื่อผู้ใช้ scroll (touch-initiated) ให้ปิด keyboard
+    let touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        const distance = Math.abs(e.touches[0].clientY - touchStartY);
+        if (distance > 30) {
+            const active = document.activeElement;
+            if (active && active.matches('input, select, textarea')) {
+                active.blur();
+            }
+        }
+    }, { passive: true });
+}
+
+// ════════════════════════════════════════════
 //  WEIGHT UNIT TOGGLE
 // ════════════════════════════════════════════
 function toggleWeightUnit() {
@@ -631,14 +686,14 @@ function calculate() {
     if (w > 0 && Number.isFinite(h_cm)) {
         const bmi = w / ((h_cm/100) ** 2);
         const bc  = getBmiClass(bmi);
-        bmiVal.innerHTML        = `${bmi.toFixed(1)} <span style="font-size:0.875rem;font-weight:600;color:${bc.color}">kg/m²</span>`;
+        bmiVal.innerHTML        = `${bmi.toFixed(1)} <span id="bmiUnit" style="font-size:0.875rem;font-weight:600;color:${bc.color}">kg/m²</span>`;
         bmiVal.style.color      = bc.color;
         bmiCls.textContent      = bc.label;
         bmiCls.style.color      = bc.color;
         bmiBar.style.width      = bc.barPct + '%';
         bmiBar.style.background = bc.color;
     } else {
-        bmiVal.innerHTML    = '--.- <span style="font-size:0.875rem;font-weight:600;color:#cbd5e1">kg/m²</span>';
+        bmiVal.innerHTML    = '--.- <span id="bmiUnit" style="font-size:0.875rem;font-weight:600;color:#cbd5e1">kg/m²</span>';
         bmiVal.style.color  = '#cbd5e1';
         bmiCls.textContent  = t('bmi_hint');
         bmiCls.style.color  = '#94a3b8';
@@ -1005,15 +1060,6 @@ function calculate() {
             ageWarn: ageOver65,
             ageWarnMsg: t('age_warn_e'),
             rec: fmtRec(E, w), renal: fmtRenal(E, true)
-        },
-        {
-            name:'Streptomycin (S)', sub:`12–18 mg/kg/day · max 1,000 mg`, icon:'💉', renalAdj:true, maxMg:1000,
-            mgKgRange:[12,18],
-            calcRange:`${Math.round(sDW*12)} – ${Math.round(sDW*18)} mg`,
-            ageWarn: ageOver65,
-            ageWarnMsg: t('age_warn_s'),
-            dwNote: allFilled && gender ? `คำนวณจาก ${sDWLabel} (${sDW.toFixed(1)} kg)` : '',
-            rec: fmtRec(S, w), renal: fmtRenal(S, true)
         }
     ];
 
@@ -1078,6 +1124,18 @@ function calculate() {
             if (crcl === null) return `<div class="text-[11px] font-medium leading-tight" style="color:#c2410c">CrCl &lt;50:<br>${t('renal_2_3x_week')}</div>`;
             if (crcl >= 50)   return `<span class="text-slate-400" style="font-size:14px">${t('renal_no_adj')}</span>`;
             return `<div class="font-bold text-orange-700">15 mg/kg</div><div class="text-[11px] text-orange-600 font-bold">${t('renal_2_3x_week')}</div>`;
+          }},
+        { name:'Streptomycin (S)',          sub:`12–18 mg/kg/day · max 1,000 mg`,  icon:'💉', renalAdj:true, renalThreshold:50, mgKgRange:[12,18], maxMg:1000,
+          calcRange:`${Math.round(sDW*12)} – ${Math.round(sDW*18)} mg`,
+          ageWarn: ageOver65,
+          ageWarnMsg: t('age_warn_s'),
+          dwNote: allFilled && gender ? `คำนวณจาก ${sDWLabel} (${sDW.toFixed(1)} kg)` : '',
+          renalMobileHint: t('renal_2_3x_week'),
+          rec: `<div class="font-bold leading-tight" style="font-size:16px;color:#164e63">${S.mg.toLocaleString('th-TH')} mg</div><div class="text-slate-500 leading-tight" style="font-size:12px">${S.tab}</div>`,
+          renalFn: (crcl) => {
+            if (crcl === null) return `<div class="text-[11px] font-medium leading-tight" style="color:#c2410c">CrCl &lt;50:<br>${t('renal_2_3x_week')}</div>`;
+            if (crcl >= 50)   return `<span class="text-slate-400" style="font-size:14px">${t('renal_no_adj')}</span>`;
+            return `<div class="font-bold text-orange-700 leading-tight" style="font-size:16px">${S.mg.toLocaleString('th-TH')} mg</div><div class="text-slate-500 leading-tight" style="font-size:12px">${S.tab}</div><div class="text-[11px] text-orange-600 font-bold mt-0.5">${t('renal_2_3x_week')}</div>`;
           }},
         { name:'Ethionamide/Pto',           sub:'15–20 mg/kg/day · Thai NTP 6.3',  icon:'💊', renalAdj:false, mgKgRange:[15,20], maxMg:1000,
           calcRange:`${Math.round(w*15)} – ${Math.round(w*20)} mg`,
@@ -1215,7 +1273,7 @@ function calculate() {
                 </td>
                 <td class="p-1 border-b ${borderCls}" style="border-left:1px solid rgba(0,0,0,0.08)">
                     <input type="number" step="any" min="0" inputmode="decimal"
-                        placeholder="${t('dose_placeholder')}"
+                        placeholder="${window.innerWidth < 768 ? t('dose_placeholder_mobile') : t('dose_placeholder')}"
                         value="${cached}"
                         style="width:100%;height:3rem;padding:0 8px;font-size:14px;border:1px solid #cbd5e1;border-radius:6px;text-align:center;outline:none;background:white"
                         onfocus="this.select()"

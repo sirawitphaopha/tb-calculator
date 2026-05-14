@@ -64,7 +64,7 @@ const TRANSLATIONS = {
         footer_disclaimer:  'โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ',
         footer_visitors:    'ผู้เข้าชม',
         footer_dev:         'พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ',
-        footer_version:     'Version 1.6.4 · เผยแพร่ 11 พฤษภาคม พ.ศ. 2569',
+        footer_version:     'Version 1.6.5 · เผยแพร่ 14 พฤษภาคม พ.ศ. 2569',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight (ผอม)',
         bmi_normal:         'Normal Weight (ปกติ)',
@@ -113,6 +113,8 @@ const TRANSLATIONS = {
         cs_renal_alt:       'หรือ 500 mg 3 ครั้ง/สัปดาห์',
         // ── Dose input ──────────────────────────
         dose_placeholder:   'กรอกโดสจริง (mg)',
+        dose_placeholder_mobile: 'กรอกโดสจริง',
+        word_or:            'หรือ',
         calc_range_exceeds: (mg) => `⚠️ calc range เกิน max (${mg} mg)`,
         // ── FDC Table ────────────────────────────
         tbl1_title:          '1. ยาต้านวัณโรคแนวที่ 1',
@@ -209,7 +211,7 @@ const TRANSLATIONS = {
         footer_disclaimer:  'This calculator is intended as a dosing reference only. Clinical decisions remain the responsibility of the treating clinician.',
         footer_visitors:    'Visitors',
         footer_dev:         'Developed by Sirawit Phaopha, Pharmacist · Prang Ku Hospital, Sisaket, Thailand',
-        footer_version:     'Version 1.6.4 · Released 11 May 2026',
+        footer_version:     'Version 1.6.5 · Released 14 May 2026',
         // ── BMI labels ──────────────────────────
         bmi_underweight:    'Underweight',
         bmi_normal:         'Normal Weight',
@@ -258,6 +260,8 @@ const TRANSLATIONS = {
         cs_renal_alt:       'or 500 mg 3 times/week',
         // ── Dose input ──────────────────────────
         dose_placeholder:   'Enter dose (mg)',
+        dose_placeholder_mobile: 'Enter dose',
+        word_or:            'or',
         calc_range_exceeds: (mg) => `⚠️ calculated range exceeds maximum (${mg} mg)`,
         // ── FDC Table ────────────────────────────
         tbl1_title:          '1. First-Line Antituberculosis Drugs',

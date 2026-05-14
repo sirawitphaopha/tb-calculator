@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫁</text></svg>">
     <title>TB Dose Calculator — Thai NTP 2021</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="tailwind.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -28,7 +28,7 @@
                 ·
                 <a href="https://www.who.int/publications/i/item/9789240107243" target="_blank" class="underline hover:text-white transition-colors" onclick="trackEvent('link_click','who_guidelines_2025')">WHO Guidelines 2025</a>
             </p>
-            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.4</span>
+            <span class="text-teal-200 text-[10px] md:text-[11px]">v1.6.5</span>
             <span class="text-teal-200 text-[10px] md:text-[11px]">· <span data-i18n="stats_today_label">วันนี้</span> <span id="statsToday">-</span> · <span data-i18n="stats_total_label">รวม</span> <span id="statsTotal">-</span> <span data-i18n="stats_unit">ครั้ง</span></span>
             <div class="flex gap-1.5 shrink-0">
                 <button onclick="resetAll()"
@@ -144,7 +144,7 @@
             <div id="crclHeaderBw" class="bg-slate-50 border border-slate-200 px-2.5 py-1.5 rounded-lg shadow-sm">
                 <div id="crclTitleRow" class="mb-1 border-b border-slate-200 pb-1 flex flex-wrap justify-between items-center">
                     <h3 class="text-sm font-bold text-teal-700">Creatinine Clearance <span class="font-normal text-slate-400 text-xs">— Calculate by <span class="font-semibold text-slate-600">Cockcroft-Gault Equation</span></span></h3>
-                    <p class="text-[10px] text-slate-500"><span data-i18n="crcl_bw_basis">อิงตาม Actual / Ideal / Adjusted BW</span> · <span id="ageRangeNote" data-i18n="age_range_note" class="text-slate-500">เฉพาะอายุ 18–92 ปี</span></p>
+                    <p id="crclBasisLine" class="text-[10px] text-slate-500"><span data-i18n="crcl_bw_basis">อิงตาม Actual / Ideal / Adjusted BW</span> · <span id="ageRangeNote" data-i18n="age_range_note" class="text-slate-500">เฉพาะอายุ 18–92 ปี</span></p>
                 </div>
                 <!-- Content row: BW boxes + Rec box side by side on desktop -->
                 <div id="crclContentRow" class="flex gap-2 items-stretch">
@@ -444,7 +444,7 @@
         <div class="text-center text-[11px] text-slate-400 pt-2 pb-1 border-t border-slate-100 mt-2 space-y-0.5">
             <div class="text-slate-500 italic px-4"><span class="text-red-500 not-italic">* </span><span data-i18n="footer_disclaimer">โปรแกรมนี้ช่วยคำนวณขนาดยาวัณโรคเบื้องต้นเท่านั้น การตัดสินใจรักษาขึ้นอยู่กับดุลยพินิจของผู้ประกอบวิชาชีพ</span></div>
             <div class="text-slate-600 font-semibold" data-i18n="footer_dev">พัฒนาโดย เภสัชกร สิรวิชญ์ เผ่าผา · โรงพยาบาลปรางค์กู่ จังหวัดศรีสะเกษ</div>
-            <div class="text-slate-600 font-semibold" data-i18n="footer_version">Version 1.6.4 · เผยแพร่ 11 พฤษภาคม พ.ศ. 2569</div>
+            <div class="text-slate-600 font-semibold" data-i18n="footer_version">Version 1.6.5 · เผยแพร่ 14 พฤษภาคม พ.ศ. 2569</div>
             <div>
                 👥 <span data-i18n="footer_visitors">ผู้เข้าชม</span>:
                 <span data-i18n="stats_today_label">วันนี้</span> <span id="footerStatsToday">-</span> ·

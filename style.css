@@ -111,7 +111,7 @@
                 background: white !important;
                 border: 1px solid #e2e8f0 !important;
                 border-radius: 0.5rem !important;
-                padding: 1px 6px !important;
+                padding: 1px 6px 6px 6px !important;
                 margin-left: 0 !important;
                 gap: 0;
             }
@@ -119,14 +119,16 @@
             #recCrclValue > span:first-child { font-size: 25px !important; font-weight: 900 !important; color: #94a3b8 !important; }
             #crclNumber { font-size: 30px !important; min-width: auto !important; display: inline !important; font-weight: 900 !important; }
             #recCrclValue > span:last-child { font-size: 13px !important; font-weight: 700 !important; color: #94a3b8 !important; }
-            #crclRow2 { display: none; align-items: center; gap: 2px; }
-            #crclLabelSpacer { font-size: 25px !important; font-weight: 900 !important; }
-            #crclMlMin { font-size: 16px !important; font-weight: 700 !important; color: #94a3b8 !important; }
-            #renalIcon { font-size: 14px !important; }
+            #crclRow2 { display: none; align-items: center; gap: 2px; transform: translateX(14px); }
+            #crclLabelSpacer { display: none !important; }
+            #crclMlMin { font-size: 14px !important; font-weight: 700 !important; color: #94a3b8 !important; line-height: 1; }
+            #renalIcon { font-size: 14px !important; line-height: 1; vertical-align: middle; position: relative; left: -18px; }
             #crclValueInline::after { content: none !important; }
             /* BMI ยืดเต็ม + ลดตัวเลข */
             #bmiBox { align-self: stretch !important; }
             #bmiValue { font-size: 20px !important; }
+            #bmiUnit { font-size: 11px !important; }
+            .lang-en #crclBasisLine { font-size: 9px !important; letter-spacing: -0.2px; }
             #crclBottomZone { display: none !important; }
             #egfrBox         { display: none !important; }
             #scrRefWarning   { display: none !important; }
@@ -147,6 +149,8 @@
             #fieldGrid label { font-size: 10px; height: auto; margin-bottom: 2px; }
             #fieldGrid input,
             #fieldGrid select { height: 2rem; font-size: 12px; padding: 0 6px; }
+            #fieldGrid .unified-input { height: 2rem; }
+            #fieldGender > .flex.h-9 { height: 2rem !important; }
 
             /* CrCl: stack BW boxes + rec box */
             #crclRow         { flex-direction: column; gap: 0.4rem; }
@@ -193,9 +197,11 @@
 
             /* Tables: tighter — ยกเว้น input cell */
             table th { padding: 4px 5px; font-size: 11px; }
+            .lang-en table th { font-size: 10px !important; padding: 4px 3px !important; }
             table td { padding: 3px 4px; font-size: 11px; }
             table td input { height: 3rem !important; font-size: 12px !important; }
             table td input::placeholder { font-size: 10px; }
+            .lang-en table td input::placeholder { font-size: 11px; }
 
             /* Fixed column widths — เท่ากันทุกตาราง */
             table { table-layout: fixed; width: 100%; }
